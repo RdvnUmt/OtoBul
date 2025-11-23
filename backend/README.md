@@ -140,3 +140,10 @@ Middleware kullanımı opsiyonel.
 Policy kullanımı projenin biraz daha büyük olabilmesine karşı yetkilendirilme kurallarının kontrolünü sağlamaktır.
 
 Ayrıca model ile diğer auth, user vb … klasörlerin ayrılmasının sebebi dinamiklik sağlamaktır. model-auth kısmında sadece veriler, repository kısmında kullanılacak metodlar (genelde SQL Queryileri) ve  service dosyası business logici ve controller ise gelen isteğe göre çağrı yapmak için kulanılacaktır.
+
+YAPILACAK TAKİP LİSTESİ :
+
+1. Debugging testinin kurulması
+2. Sistemin ufak bir parçasının inşaatı
+3. unittest-pytest kullanılarak test case incelemesi
+4. Oluşacak hatalara karşı debugger kurulumu (yeri değişebilir)
