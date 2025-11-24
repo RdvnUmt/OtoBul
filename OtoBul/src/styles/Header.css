@@ -1,0 +1,53 @@
+.header {
+  background-color: #1f2937;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.name {
+  font-weight: 700;
+  font-size: 32px;
+  color: #1e40af;
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.btn-login {
+  background-color: #e7f5ff;
+  color: #1f2937;
+}
+
+.btn-login:hover {
+  background-color: #d0ebff;
+}
+
+.btn-advertise {
+  background-color: #1e40af;
+  color: #ffffff;
+}
+
+.btn-advertise:hover {
+  background-color: #1e3a8a;
+}
+
