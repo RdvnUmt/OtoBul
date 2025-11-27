@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/app_header.dart'; // path sende farklıysa düzelt
-import '../../../core/theme/colors.dart';   // path sende farklıysa düzelt
-
-enum ProfileSection { favorites, listings, messages }
+import '../widgets/sidebar.dart'; // aynı klasör değilse path düzelt
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -33,14 +31,31 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
 
       // mobilde isWide değilken drawer gösteriyoruz
-      drawer: isWide ? null : Drawer(child: _buildSidePanel(isDrawer: true)),
+      drawer: isWide
+          ? null
+          : Drawer(
+              child: HomeScreenSidebar(
+                isDrawer: true,
+                selected: _selected,
+                onSelected: (section) => setState(() => _selected = section),
+                onLogout: () {
+                  // TODO: logout aksiyonu
+                },
+              ),
+            ),
 
       body: Row(
         children: [
           if (isWide)
             SizedBox(
               width: 280,
-              child: _buildSidePanel(),
+              child: HomeScreenSidebar(
+                selected: _selected,
+                onSelected: (section) => setState(() => _selected = section),
+                onLogout: () {
+                  // TODO: logout aksiyonu
+                },
+              ),
             ),
 
           Expanded(
@@ -58,32 +73,6 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSidePanel({bool isDrawer = false}) {
-    return Container(
-      color: AppColors.borderLight, // koyu gri gibi davranacak (palette göre)
-      child: Column(
-        children: [
-          // Şimdilik sadece tıklanabilir alanlar; sen içerikleri dolduracaksın.
-          _menuHitArea(ProfileSection.favorites, isDrawer: isDrawer),
-          _menuHitArea(ProfileSection.listings, isDrawer: isDrawer),
-          _menuHitArea(ProfileSection.messages, isDrawer: isDrawer),
-
-          const Expanded(child: SizedBox.shrink()),
-        ],
-      ),
-    );
-  }
-
-  Widget _menuHitArea(ProfileSection section, {required bool isDrawer}) {
-    return InkWell(
-      onTap: () {
-        setState(() => _selected = section);
-        if (isDrawer) Navigator.pop(context); // drawer ise kapat
-      },
-      child: const SizedBox(height: 56, width: double.infinity),
     );
   }
 }

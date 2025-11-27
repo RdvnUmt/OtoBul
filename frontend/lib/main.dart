@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '/core/theme/theme.dart';
-import '/features/home/screens/home_screen.dart';
+import 'app/app_router.dart'; // sende appRouter burada
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const OtoBulApp());
 }
 
@@ -11,12 +11,9 @@ class OtoBulApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'OtoBul',
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark, // Zorunlu karanlık mod
-      darkTheme: buildCorporateTheme(),
-      home: const HomeScreen(),
+      routerConfig: appRouter,
     );
   }
 }

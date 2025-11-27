@@ -15,6 +15,7 @@ class AppColors {
   // Ana Renk: Kurumsal Mavi (Güven, Profesyonellik)
   static const Color primary = Color(0xFF2563EB);          // Royal Blue
   static const Color primaryLight = Color(0xFF3B82F6);     // Hover için
+  static const Color primaryLight_2 = Color.fromARGB(255, 34, 201, 255);     // text için
   static const Color primaryDark = Color(0xFF1D4ED8);      // Tıklama anı
   
   // İkincil Renk: Platin/Gümüş (Lüks & Prestij)
