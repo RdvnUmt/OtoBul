@@ -6,7 +6,7 @@ class FavoriteListingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const ColoredBox(
-      color: Color(0xFFF48FB1), // pembe
+      color: Color.fromARGB(255, 255, 255, 255), // pembe
       child: Center(
         child: Text(
           'FAVORITE LISTINGS PAGE',

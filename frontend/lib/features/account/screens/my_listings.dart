@@ -5,12 +5,15 @@ class MyListingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: Color(0xFF90CAF9), // açık mavi
-      child: Center(
-        child: Text(
-          'MY LISTINGS PAGE',
-          style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
+    return SizedBox(
+      height: 1000,
+      child: const ColoredBox(
+        color: Color.fromARGB(255, 255, 255, 255), // açık mavi
+        child: Center(
+          child: Text(
+            'MY LISTINGS PAGE',
+            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
+          ),
         ),
       ),
     );

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../shared/app_header.dart';
-import '../widgets/sidebar.dart'; // HomeScreenSidebar + ProfileSection burada tanımlı
+import '../../../shared/app_footer.dart';
 import '../../../app/app_router.dart';
+import '../widgets/sidebar.dart';
 
 ProfileSection sectionFromLocation(String path) {
   if (path.startsWith(AppRoutes.listings)) return ProfileSection.listings;
@@ -22,7 +23,33 @@ String routeForSection(ProfileSection s) {
       return AppRoutes.favorites;
     case ProfileSection.settings:
       return AppRoutes.settings;
-    // ignore: no_default_cases
+  }
+}
+
+/// ✅ Sağ içerik alanı: tek scroll + en altta footer
+class AccountRightPane extends StatelessWidget {
+  const AccountRightPane({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scrollbar(
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: child),
+
+          // İçerik kısa olsa bile footer sağ panelin en altına iner.
+          // İçerik uzunsa footer en sonda görünür.
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: const Align(
+              alignment: Alignment.bottomCenter,
+              child: AppFooter(),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -42,8 +69,8 @@ class AccountShell extends StatelessWidget {
     final selected = sectionFromLocation(location);
 
     void onSelect(ProfileSection section) {
-      final target = routeForSection(section);
-      if (target != location) context.go(target);
+      if (section == selected) return; // ✅ string kıyası değil, section kıyası
+      context.go(routeForSection(section));
     }
 
     return Scaffold(
@@ -55,7 +82,7 @@ class AccountShell extends StatelessWidget {
       drawer: isWide
           ? null
           : Drawer(
-              child: HomeScreenSidebar(
+              child: SidebarAccount(
                 isDrawer: true,
                 selected: selected,
                 onSelected: onSelect,
@@ -69,7 +96,7 @@ class AccountShell extends StatelessWidget {
           if (isWide)
             SizedBox(
               width: 280,
-              child: HomeScreenSidebar(
+              child: SidebarAccount(
                 selected: selected,
                 onSelected: onSelect,
                 onLogout: () {
@@ -77,7 +104,13 @@ class AccountShell extends StatelessWidget {
                 },
               ),
             ),
-          Expanded(child: child),
+
+          // ✅ Footer sadece sağ panelin altında ve tüm sağ taraf scrollable
+          Expanded(
+            child: AccountRightPane(
+              child: child,
+            ),
+          ),
         ],
       ),
     );

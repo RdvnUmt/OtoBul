@@ -22,7 +22,14 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     return Container(
       height: 72,
       decoration: const BoxDecoration(
-        color: AppColors.surface,
+        gradient: LinearGradient(
+          colors: [
+            AppColors.surface,
+            Color.fromARGB(255, 39, 65, 105),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
         border: Border(
           bottom: BorderSide(
             color: AppColors.border,

@@ -3,25 +3,30 @@ import 'package:go_router/go_router.dart';
 
 import '../features/account/screens/account_shell.dart';
 
-// Senin var olduğunu varsaydığım sayfalar:
+// Sayfaların:
 import '../features/account/screens/profile.dart';
 import '../features/account/screens/my_listings.dart';
 import '../features/account/screens/favorite_listings.dart';
 import '../features/account/screens/settings.dart';
 
 class AppRoutes {
-  // Arabam benzeri:
-  static const String cockpit = '/arabam-kokpit';
+  static const String account = '/hesabim';
 
-  static const String profile = '$cockpit/profilim';
-  static const String listings = '$cockpit/ilanlarim';
-  static const String favorites = '$cockpit/favori-ilanlarim';
-  static const String settings = '$cockpit/ayarlar';
+  static const String profile = '$account/profilim';
+  static const String listings = '$account/ilanlarim';
+  static const String favorites = '$account/favori-ilanlarim';
+  static const String settings = '$account/ayarlar';
 }
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.profile,
   routes: [
+    // ✅ /hesabim yazılırsa boş kalmasın
+    GoRoute(
+      path: AppRoutes.account,
+      redirect: (_, __) => AppRoutes.profile,
+    ),
+
     ShellRoute(
       builder: (context, state, child) {
         return AccountShell(

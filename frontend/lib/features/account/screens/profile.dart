@@ -8,7 +8,7 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const _DummyPage(
       title: 'PROFILE PAGE',
-      background: Color(0xFFFFEB3B), // sarı
+      background: Color.fromARGB(255, 255, 255, 255), // sarı
     );
   }
 }

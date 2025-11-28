@@ -6,7 +6,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const ColoredBox(
-      color: Color(0xFFA5D6A7), // açık yeşil
+      color: Color.fromARGB(255, 255, 255, 255), // açık yeşil
       child: Center(
         child: Text(
           'SETTINGS PAGE',
