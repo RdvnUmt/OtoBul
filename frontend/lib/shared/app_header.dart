@@ -6,12 +6,16 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onLogoTap;
   final VoidCallback? onLoginTap;
   final VoidCallback? onRegisterTap;
+  final VoidCallback? onProfileTap;
+  final VoidCallback? onPostAdTap;
 
   const AppHeader({
     super.key,
     this.onLogoTap,
     this.onLoginTap,
     this.onRegisterTap,
+    this.onProfileTap,
+    this.onPostAdTap,
   });
 
   @override
@@ -19,35 +23,35 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 72,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.surface,
-            Color.fromARGB(255, 39, 65, 105),
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.border,
-            width: 1,
+    return DefaultTextStyle.merge(
+      style: const TextStyle(decoration: TextDecoration.none),
+      child: Container(
+        height: 72,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.surface,
+              Color.fromARGB(255, 39, 65, 105),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          border: Border(
+            bottom: BorderSide(
+              color: AppColors.border,
+              width: 1,
+            ),
           ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 48),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Sol: Logo
-            _buildLogo(),
-            
-            // Sağ: Butonlar
-            _buildAuthButtons(),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 48),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildLogo(),
+              _buildButtons(),
+            ],
+          ),
         ),
       ),
     );
@@ -61,7 +65,6 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Kurumsal ikon container
             Container(
               width: 40,
               height: 40,
@@ -78,7 +81,6 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // Marka adı - Kurumsal tipografi
             Text.rich(
               TextSpan(
                 children: [
@@ -89,6 +91,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                       fontWeight: FontWeight.w800,
                       color: AppColors.textPrimary,
                       letterSpacing: 1.5,
+                      decoration: TextDecoration.none,
                     ),
                   ),
                   TextSpan(
@@ -98,6 +101,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                       fontWeight: FontWeight.w800,
                       color: AppColors.primary,
                       letterSpacing: 1.5,
+                      decoration: TextDecoration.none,
                     ),
                   ),
                 ],
@@ -109,26 +113,24 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  Widget _buildAuthButtons() {
+  Widget _buildButtons() {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Giriş Yap butonu (Outline/Ghost tarzı)
         _LoginButton(onTap: onLoginTap),
         const SizedBox(width: 12),
-        // Hesap Oluştur butonu (Primary)
         _RegisterButton(onTap: onRegisterTap),
+        const SizedBox(width: 12),
+        _ProfileButton(onTap: onProfileTap),
+        const SizedBox(width: 12),
+        _PostAdButton(onTap: onPostAdTap),
       ],
     );
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// GİRİŞ YAP BUTONU - Minimal Outline Stil
-// ═══════════════════════════════════════════════════════════════════════════════
 class _LoginButton extends StatefulWidget {
   final VoidCallback? onTap;
-
   const _LoginButton({this.onTap});
 
   @override
@@ -151,14 +153,10 @@ class _LoginButtonState extends State<_LoginButton> {
           curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
-            color: _isHovered 
-                ? AppColors.surfaceLight 
-                : Colors.transparent,
+            color: _isHovered ? AppColors.surfaceLight : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
-              color: _isHovered 
-                  ? AppColors.borderLight 
-                  : AppColors.border,
+              color: _isHovered ? AppColors.borderLight : AppColors.border,
               width: 1,
             ),
           ),
@@ -167,10 +165,9 @@ class _LoginButtonState extends State<_LoginButton> {
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: _isHovered 
-                  ? AppColors.textPrimary 
-                  : AppColors.textSecondary,
+              color: _isHovered ? AppColors.textPrimary : AppColors.textSecondary,
               letterSpacing: 0.2,
+              decoration: TextDecoration.none,
             ),
           ),
         ),
@@ -179,12 +176,8 @@ class _LoginButtonState extends State<_LoginButton> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// HESAP OLUŞTUR BUTONU - Kurumsal Primary Stil
-// ═══════════════════════════════════════════════════════════════════════════════
 class _RegisterButton extends StatefulWidget {
   final VoidCallback? onTap;
-
   const _RegisterButton({this.onTap});
 
   @override
@@ -207,9 +200,7 @@ class _RegisterButtonState extends State<_RegisterButton> {
           curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
-            color: _isHovered 
-                ? AppColors.primaryLight 
-                : AppColors.primary,
+            color: _isHovered ? AppColors.primaryLight : AppColors.primary,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -219,6 +210,97 @@ class _RegisterButtonState extends State<_RegisterButton> {
               fontWeight: FontWeight.w600,
               color: Colors.white,
               letterSpacing: 0.2,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileButton extends StatefulWidget {
+  final VoidCallback? onTap;
+  const _ProfileButton({this.onTap});
+
+  @override
+  State<_ProfileButton> createState() => _ProfileButtonState();
+}
+
+class _ProfileButtonState extends State<_ProfileButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color: _isHovered ? AppColors.surfaceLight : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: _isHovered ? AppColors.borderLight : AppColors.border,
+              width: 1,
+            ),
+          ),
+          child: Text(
+            'Profilim',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: _isHovered ? AppColors.textPrimary : AppColors.textSecondary,
+              letterSpacing: 0.2,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PostAdButton extends StatefulWidget {
+  final VoidCallback? onTap;
+  const _PostAdButton({this.onTap});
+
+  @override
+  State<_PostAdButton> createState() => _PostAdButtonState();
+}
+
+class _PostAdButtonState extends State<_PostAdButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color: _isHovered ? AppColors.primaryLight : AppColors.primary,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            'İlan Ver',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              letterSpacing: 0.2,
+              decoration: TextDecoration.none,
             ),
           ),
         ),

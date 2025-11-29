@@ -45,13 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // Header
-          AppHeader(
-            onLogoTap: () => _navigateToHome(context),
-            onLoginTap: () => _openLoginDialog(context),
-            onRegisterTap: () => _openRegisterDialog(context),
-          ),
-          
           // Ana İçerik: Sidebar + İlanlar + Footer
           Expanded(
             child: Row(

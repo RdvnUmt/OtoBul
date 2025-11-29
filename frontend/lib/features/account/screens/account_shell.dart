@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../shared/app_header.dart';
 import '../../../shared/app_footer.dart';
 import '../../../app/app_router.dart';
 import '../widgets/sidebar.dart';
@@ -37,9 +36,6 @@ class AccountRightPane extends StatelessWidget {
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: child),
-
-          // İçerik kısa olsa bile footer sağ panelin en altına iner.
-          // İçerik uzunsa footer en sonda görünür.
           SliverFillRemaining(
             hasScrollBody: false,
             child: const Align(
@@ -69,16 +65,12 @@ class AccountShell extends StatelessWidget {
     final selected = sectionFromLocation(location);
 
     void onSelect(ProfileSection section) {
-      if (section == selected) return; // ✅ string kıyası değil, section kıyası
+      if (section == selected) return;
       context.go(routeForSection(section));
     }
 
     return Scaffold(
-      appBar: AppHeader(
-        onLogoTap: () {},
-        onLoginTap: () {},
-        onRegisterTap: () {},
-      ),
+      // ✅ AppHeader buradan kaldırıldı (artık global)
       drawer: isWide
           ? null
           : Drawer(
@@ -104,8 +96,6 @@ class AccountShell extends StatelessWidget {
                 },
               ),
             ),
-
-          // ✅ Footer sadece sağ panelin altında ve tüm sağ taraf scrollable
           Expanded(
             child: AccountRightPane(
               child: child,

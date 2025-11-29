@@ -3,15 +3,22 @@ import 'package:go_router/go_router.dart';
 
 import '../features/account/screens/account_shell.dart';
 
-// Sayfaların:
+// Screens
+import '../features/home/screens/home_screen.dart';
+import '../features/auth/screens/auth_screen.dart';
+import '../features/listing_create/screens/listing_create_screen.dart';
+
 import '../features/account/screens/profile.dart';
 import '../features/account/screens/my_listings.dart';
 import '../features/account/screens/favorite_listings.dart';
 import '../features/account/screens/settings.dart';
 
 class AppRoutes {
-  static const String account = '/hesabim';
+  static const String home = '/';
+  static const String auth = '/giris';
+  static const String listingCreate = '/ilan-ver';
 
+  static const String account = '/hesabim';
   static const String profile = '$account/profilim';
   static const String listings = '$account/ilanlarim';
   static const String favorites = '$account/favori-ilanlarim';
@@ -19,8 +26,24 @@ class AppRoutes {
 }
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: AppRoutes.profile,
+  initialLocation: AppRoutes.home,
   routes: [
+    GoRoute(
+      path: AppRoutes.home,
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: HomeScreen()),
+    ),
+    GoRoute(
+      path: AppRoutes.auth,
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: AuthScreen()),
+    ),
+    GoRoute(
+      path: AppRoutes.listingCreate,
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: ListingCreateScreen()),
+    ),
+
     // ✅ /hesabim yazılırsa boş kalmasın
     GoRoute(
       path: AppRoutes.account,
