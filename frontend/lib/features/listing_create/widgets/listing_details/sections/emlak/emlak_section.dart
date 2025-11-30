@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../listing_form_fields.dart';
 import '../../listing_details_draft.dart';
-import '../../listing_details_types.dart';
 import '../../../listing_create_models.dart';
 import 'emlak_arsa_section.dart';
 import 'emlak_devremulk_section.dart';
