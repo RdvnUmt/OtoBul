@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'app/app_router.dart';
 import 'shared/app_header.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
+  await initializeDateFormatting('tr_TR', null);
   runApp(const OtoBulApp());
 }
 

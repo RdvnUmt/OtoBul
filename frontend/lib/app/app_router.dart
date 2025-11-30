@@ -7,6 +7,7 @@ import '../features/home/screens/home_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/listing_create/screens/listing_create_screen.dart';
+import '../features/listing_detail/screens/listing_detail_screen.dart';
 
 import '../features/account/screens/profile.dart';
 import '../features/account/screens/my_listings.dart';
@@ -16,6 +17,7 @@ import '../features/account/screens/settings.dart';
 class AppRoutes {
   // Ana sayfalar
   static const String home = '/';
+  static const String listingDetail = '/ilan-detay/:id';
 
   // Emlak Kategorileri
   static const String property = '/emlak';
@@ -52,6 +54,15 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.home,
       pageBuilder: (context, state) =>
           const NoTransitionPage(child: HomeScreen()),
+    ),
+
+    // İlan Detay
+    GoRoute(
+      path: '/ilan-detay/:id',
+      pageBuilder: (context, state) {
+        final id = state.pathParameters['id'] ?? '';
+        return NoTransitionPage(child: ListingDetailScreen(listingId: id));
+      },
     ),
 
     // Giriş Yap
