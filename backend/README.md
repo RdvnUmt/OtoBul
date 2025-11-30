@@ -143,7 +143,10 @@ Ayrıca model ile diğer auth, user vb … klasörlerin ayrılmasının sebebi d
 
 YAPILACAK TAKİP LİSTESİ :
 
-1. Debugging testinin kurulması
-2. Sistemin ufak bir parçasının inşaatı
-3. unittest-pytest kullanılarak test case incelemesi
-4. Oluşacak hatalara karşı debugger kurulumu (yeri değişebilir)
+1. Dbeaver- MySQL bağlantısının kurulması X  (25dk)
+2. Flask temel ögeleri kuruldu debuggin sistemi kuruldu henüz işlevsiz X (25dk)
+3. Debugging testinin kurulması - test kurulma işlemi öğrenildi pytest ve pytest-mock indirildi X
+4. SQL-Alchemy kurulumu 
+5. Sistemin ufak bir parçasının inşaatı. Kullanılan sınıflar - favori, listing, user,adress, kategori  
+6. unittest-pytest kullanılarak test case incelemesi (İleride yapılmasına karar verildi)
+7. Oluşacak hatalara karşı debugger kurulumu (yeri değişebilir)
