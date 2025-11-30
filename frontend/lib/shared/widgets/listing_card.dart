@@ -4,18 +4,95 @@ import '/core/theme/colors.dart';
 import '/core/models/listing_model.dart';
 import 'package:intl/intl.dart';
 
+/// ListingCard için Listing'e alternatif (create preview gibi yerlerde)
+class ListingCardVm {
+  final String listingNo;
+  final String title;
+  final String description;
+
+  /// 'vasita' ise araç detay layoutu, değilse emlak layoutu
+  final String category;
+
+  final String sellerType;
+  final String city;
+  final String district;
+
+  final DateTime createdAt;
+  final double price;
+
+  final bool isFavorite;
+
+  /// ListingCard mevcut mantığıyla uyumlu (km, fuel, gear... veya grossM2, netM2...)
+  final Map<String, dynamic> details;
+
+  /// İstersen asset, istersen network
+  final ImageProvider? imageProvider;
+
+  const ListingCardVm({
+    required this.listingNo,
+    required this.title,
+    required this.description,
+    required this.category,
+    required this.sellerType,
+    required this.city,
+    required this.district,
+    required this.createdAt,
+    required this.price,
+    required this.isFavorite,
+    required this.details,
+    this.imageProvider,
+  });
+
+  factory ListingCardVm.fromListing(Listing listing) {
+    return ListingCardVm(
+      listingNo: _safeShortId(listing.id),
+      title: listing.title,
+      description: listing.description,
+      category: listing.category,
+      sellerType: listing.sellerType,
+      city: listing.city,
+      district: listing.district,
+      createdAt: listing.createdAt,
+      price: listing.price,
+      isFavorite: listing.isFavorite,
+      details: listing.details,
+      imageProvider: NetworkImage(listing.imageUrl),
+    );
+  }
+
+  static String _safeShortId(Object id) {
+    final s = id.hashCode.abs().toString();
+    // substring crash olmasın:
+    if (s.length >= 8) return s.substring(0, 8);
+    return s.padLeft(8, '0');
+  }
+}
+
 /// İlan Kartı Widget'ı - Sahibinden.com tarzı tasarım
 class ListingCard extends StatefulWidget {
-  final Listing listing;
+  final Listing? listing;
+  final ListingCardVm? vm;
+
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteTap;
 
+  /// Normal kullanım (mevcut kullanımın aynısı)
   const ListingCard({
     super.key,
-    required this.listing,
+    required Listing listing,
     this.onTap,
     this.onFavoriteTap,
-  });
+  })  : listing = listing,
+        vm = null;
+
+  /// Preview / create screen gibi yerler için Listing modeline gerek kalmadan kullanım
+  const ListingCard.preview({
+    super.key,
+    required ListingCardVm vm,
+    this.onTap,
+    this.onFavoriteTap,
+  })  : vm = vm,
+        listing = null;
 
   @override
   State<ListingCard> createState() => _ListingCardState();
@@ -23,6 +100,11 @@ class ListingCard extends StatefulWidget {
 
 class _ListingCardState extends State<ListingCard> {
   bool _isHovered = false;
+
+  ListingCardVm get _data {
+    if (widget.vm != null) return widget.vm!;
+    return ListingCardVm.fromListing(widget.listing!);
+  }
 
   String _formatPrice(double price) {
     final formatter = NumberFormat('#,###', 'tr_TR');
@@ -46,6 +128,8 @@ class _ListingCardState extends State<ListingCard> {
 
   @override
   Widget build(BuildContext context) {
+    final d = _data;
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _isHovered = true),
@@ -67,15 +151,15 @@ class _ListingCardState extends State<ListingCard> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Sol: Görsel
-                _buildImage(),
+                _buildImage(d),
 
                 // Orta: Detaylar
                 Expanded(
-                  child: _buildDetails(),
+                  child: _buildDetails(d),
                 ),
 
                 // Sağ: Konum, Tarih, Fiyat
-                _buildRightSection(),
+                _buildRightSection(d),
               ],
             ),
           ),
@@ -84,7 +168,7 @@ class _ListingCardState extends State<ListingCard> {
     );
   }
 
-  Widget _buildImage() {
+  Widget _buildImage(ListingCardVm d) {
     return Stack(
       children: [
         Container(
@@ -95,12 +179,25 @@ class _ListingCardState extends State<ListingCard> {
               topLeft: Radius.circular(4),
               bottomLeft: Radius.circular(4),
             ),
-            image: DecorationImage(
-              image: NetworkImage(widget.listing.imageUrl),
-              fit: BoxFit.cover,
-            ),
+            image: d.imageProvider != null
+                ? DecorationImage(
+                    image: d.imageProvider!,
+                    fit: BoxFit.cover,
+                  )
+                : null,
+            color: d.imageProvider == null ? AppColors.surfaceLight : null,
           ),
+          child: d.imageProvider == null
+              ? Center(
+                  child: Icon(
+                    Icons.photo_rounded,
+                    color: AppColors.textTertiary,
+                    size: 34,
+                  ),
+                )
+              : null,
         ),
+
         // İlan No
         Positioned(
           bottom: 8,
@@ -112,7 +209,7 @@ class _ListingCardState extends State<ListingCard> {
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
-              '#${widget.listing.id.hashCode.abs().toString().substring(0, 8)}',
+              '#${d.listingNo}',
               style: GoogleFonts.inter(
                 fontSize: 11,
                 color: Colors.white70,
@@ -124,7 +221,7 @@ class _ListingCardState extends State<ListingCard> {
     );
   }
 
-  Widget _buildDetails() {
+  Widget _buildDetails(ListingCardVm d) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -132,7 +229,7 @@ class _ListingCardState extends State<ListingCard> {
         children: [
           // İlan No
           Text(
-            'İlan No: ${widget.listing.id.hashCode.abs().toString().substring(0, 8)}',
+            'İlan No: ${d.listingNo}',
             style: GoogleFonts.inter(
               fontSize: 12,
               color: AppColors.textTertiary,
@@ -142,7 +239,7 @@ class _ListingCardState extends State<ListingCard> {
 
           // Başlık
           Text(
-            widget.listing.title,
+            d.title,
             style: GoogleFonts.inter(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -155,7 +252,7 @@ class _ListingCardState extends State<ListingCard> {
 
           // Açıklama
           Text(
-            widget.listing.description,
+            d.description,
             style: GoogleFonts.inter(
               fontSize: 13,
               color: AppColors.textSecondary,
@@ -166,24 +263,24 @@ class _ListingCardState extends State<ListingCard> {
           const SizedBox(height: 12),
 
           // Detay Satırları
-          _buildDetailRows(),
+          _buildDetailRows(d),
         ],
       ),
     );
   }
 
-  Widget _buildDetailRows() {
-    final details = widget.listing.details;
-    final isVehicle = widget.listing.category == 'vasita';
+  Widget _buildDetailRows(ListingCardVm d) {
+    final details = d.details;
+    final isVehicle = d.category == 'vasita';
 
     if (isVehicle) {
-      return _buildVehicleDetails(details);
+      return _buildVehicleDetails(details, d.sellerType);
     } else {
-      return _buildPropertyDetails(details);
+      return _buildPropertyDetails(details, d.sellerType);
     }
   }
 
-  Widget _buildVehicleDetails(Map<String, dynamic> details) {
+  Widget _buildVehicleDetails(Map<String, dynamic> details, String sellerType) {
     final km = details['km'];
     final fuel = details['fuel'];
     final gear = details['gear'];
@@ -197,7 +294,7 @@ class _ListingCardState extends State<ListingCard> {
           children: [
             if (km != null) _buildDetailItem('${_formatNumber(km)} km', AppColors.info),
             if (km != null) const SizedBox(width: 24),
-            _buildDetailItem(widget.listing.sellerType, AppColors.textSecondary),
+            _buildDetailItem(sellerType, AppColors.textSecondary),
             const SizedBox(width: 24),
             if (fuel != null) _buildDetailItem(fuel, AppColors.textSecondary),
           ],
@@ -226,7 +323,7 @@ class _ListingCardState extends State<ListingCard> {
     );
   }
 
-  Widget _buildPropertyDetails(Map<String, dynamic> details) {
+  Widget _buildPropertyDetails(Map<String, dynamic> details, String sellerType) {
     final grossM2 = details['grossM2'];
     final netM2 = details['netM2'];
     final roomCount = details['roomCount'];
@@ -258,7 +355,7 @@ class _ListingCardState extends State<ListingCard> {
         const SizedBox(height: 6),
         Row(
           children: [
-            _buildDetailItem(widget.listing.sellerType, AppColors.textSecondary),
+            _buildDetailItem(sellerType, AppColors.textSecondary),
           ],
         ),
       ],
@@ -286,7 +383,7 @@ class _ListingCardState extends State<ListingCard> {
     );
   }
 
-  Widget _buildRightSection() {
+  Widget _buildRightSection(ListingCardVm d) {
     return Container(
       width: 220,
       padding: const EdgeInsets.all(16),
@@ -305,7 +402,7 @@ class _ListingCardState extends State<ListingCard> {
               // Konum
               Expanded(
                 child: Text(
-                  '${widget.listing.city} / ${widget.listing.district}',
+                  '${d.city} / ${d.district}',
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -325,7 +422,7 @@ class _ListingCardState extends State<ListingCard> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Icon(
-                    widget.listing.isFavorite ? Icons.star : Icons.star_border,
+                    d.isFavorite ? Icons.star : Icons.star_border,
                     size: 16,
                     color: Colors.white,
                   ),
@@ -337,7 +434,7 @@ class _ListingCardState extends State<ListingCard> {
 
           // Tarih
           Text(
-            _formatDate(widget.listing.createdAt),
+            _formatDate(d.createdAt),
             style: GoogleFonts.inter(
               fontSize: 12,
               color: AppColors.textTertiary,
@@ -348,7 +445,7 @@ class _ListingCardState extends State<ListingCard> {
 
           // Fiyat
           Text(
-            _formatPrice(widget.listing.price),
+            _formatPrice(d.price),
             style: GoogleFonts.inter(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -365,4 +462,3 @@ class _ListingCardState extends State<ListingCard> {
     return formatter.format(number);
   }
 }
-
