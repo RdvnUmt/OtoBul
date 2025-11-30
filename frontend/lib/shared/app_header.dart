@@ -154,7 +154,7 @@ class _LoginButtonState extends State<_LoginButton> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             color: _isHovered ? AppColors.surfaceLight : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
             border: Border.all(
               color: _isHovered ? AppColors.borderLight : AppColors.border,
               width: 1,
@@ -201,7 +201,7 @@ class _RegisterButtonState extends State<_RegisterButton> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             color: _isHovered ? AppColors.primaryLight : AppColors.primary,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
             'Hesap Oluştur',
@@ -244,7 +244,7 @@ class _ProfileButtonState extends State<_ProfileButton> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             color: _isHovered ? AppColors.surfaceLight : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
             border: Border.all(
               color: _isHovered ? AppColors.borderLight : AppColors.border,
               width: 1,
@@ -291,7 +291,7 @@ class _PostAdButtonState extends State<_PostAdButton> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             color: _isHovered ? AppColors.primaryLight : AppColors.primary,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
             'İlan Ver',

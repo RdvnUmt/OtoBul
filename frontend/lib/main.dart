@@ -23,8 +23,8 @@ class OtoBulApp extends StatelessWidget {
               bottom: false,
               child: AppHeader(
                 onLogoTap: () => appRouter.go(AppRoutes.home),
-                onLoginTap: () => appRouter.go(AppRoutes.auth),
-                onRegisterTap: () => appRouter.go(AppRoutes.auth),
+                onLoginTap: () => appRouter.go(AppRoutes.login),
+                onRegisterTap: () => appRouter.go(AppRoutes.register),
                 onProfileTap: () => appRouter.go(AppRoutes.profile),
                 onPostAdTap: () => appRouter.go(AppRoutes.listingCreate),
               ),
