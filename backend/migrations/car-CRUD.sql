@@ -32,7 +32,7 @@ INSERT INTO Vasita_Ilan (ilan_id,vasita_tipi,model_id ,yakit_tipi ,vites,arac_du
 -- İlan id / İlan id / ilan id
 
 INSERT INTO Otomobil(vasita_id,kasa_tipi,cekis,olusturulma_tarihi ,guncellenme_tarihi) 
-VALUES (last_insert_id() ,2,3, NOW(), NOW());
+VALUES (last_insert_id() ,"Hackback","Önden Çekiş", NOW(), NOW());
 -- Otomobil id yi sil AUTO INCREMENT, vasita_id yi yukarıdan al!)
 COMMIT;  
 
