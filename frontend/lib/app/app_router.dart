@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:my_flutter_app/core/data/mock_listings.dart';
 
 import '../features/account/screens/account_shell.dart';
 
@@ -32,7 +33,7 @@ class AppRoutes {
   static const String truck = '$vehicle/tir';
   static const String caravan = '$vehicle/karavan';
   static const String motorcycle = '$vehicle/motosiklet';
-  
+
   static const String login = '/giris';
   static const String register = '/kayit';
 
@@ -79,7 +80,6 @@ final GoRouter appRouter = GoRouter(
           const NoTransitionPage(child: RegisterScreen()),
     ),
 
-  
     // İlan Ver
     GoRoute(
       path: AppRoutes.listingCreate,
@@ -88,34 +88,39 @@ final GoRouter appRouter = GoRouter(
     ),
 
     // /hesabim yazılırsa profile'a yönlendir
-    GoRoute(
-      path: AppRoutes.account,
-      redirect: (_, __) => AppRoutes.profile,
-    ),
+    GoRoute(path: AppRoutes.account, redirect: (_, __) => AppRoutes.profile),
 
     // Hesap Sayfaları (Shell Route)
     ShellRoute(
       builder: (context, state, child) {
-        return AccountShell(
-          location: state.uri.path,
-          child: child,
-        );
+        return AccountShell(location: state.uri.path, child: child);
       },
       routes: [
         GoRoute(
           path: AppRoutes.profile,
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: ProfilePage()),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: ProfilePage(
+              initialFirstName: "Taha",
+              initialLastName: "Tavlan",
+              phone: "+90 545 958 90 74",
+              email: "ttavlan@email.com",
+            ),
+          ),
         ),
         GoRoute(
           path: AppRoutes.listings,
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: MyListingsPage()),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: MyListingsPage(
+              myListings: MockListings.konutListings, // örnek
+              onEditTap: (l) { },
+            ),
+          ),
         ),
         GoRoute(
           path: AppRoutes.favorites,
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: FavoriteListingsPage()),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: FavoriteListingsPage(favorites: MockListings.allListings),
+          ),
         ),
         GoRoute(
           path: AppRoutes.settings,

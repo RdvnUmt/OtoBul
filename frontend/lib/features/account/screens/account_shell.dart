@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../shared/app_footer.dart';
 import '../../../app/app_router.dart';
 import '../widgets/sidebar.dart';
 
@@ -26,28 +25,44 @@ String routeForSection(ProfileSection s) {
 }
 
 /// ✅ Sağ içerik alanı: tek scroll + en altta footer
-class AccountRightPane extends StatelessWidget {
+class AccountRightPane extends StatefulWidget {
   const AccountRightPane({super.key, required this.child});
   final Widget child;
 
   @override
+  State<AccountRightPane> createState() => _AccountRightPaneState();
+}
+
+class _AccountRightPaneState extends State<AccountRightPane> {
+  final _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scrollbar(
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: child),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: const Align(
-              alignment: Alignment.bottomCenter,
-              child: AppFooter(),
-            ),
-          ),
-        ],
+    return ColoredBox(
+      color: Colors.white,
+      child: Scrollbar(
+        controller: _controller,
+        thumbVisibility: true,   // ✅ sürekli görünsün istersen
+        trackVisibility: true,   // ✅ track de görünsün istersen
+        interactive: true,       // ✅ sürükleyerek scroll
+        child: CustomScrollView(
+          controller: _controller,
+          slivers: [
+            SliverToBoxAdapter(child: widget.child),
+            // Footer yoksa bunu da kaldırabilirsin; boş sliver’a gerek yok.
+          ],
+        ),
       ),
     );
   }
 }
+
 
 class AccountShell extends StatelessWidget {
   const AccountShell({
@@ -70,7 +85,6 @@ class AccountShell extends StatelessWidget {
     }
 
     return Scaffold(
-      // ✅ AppHeader buradan kaldırıldı (artık global)
       drawer: isWide
           ? null
           : Drawer(

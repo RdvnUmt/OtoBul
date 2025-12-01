@@ -1,3 +1,4 @@
+// listing_card.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/core/theme/colors.dart';
@@ -74,6 +75,8 @@ class ListingCard extends StatefulWidget {
   final ListingCardVm? vm;
 
   final VoidCallback? onTap;
+
+  /// ⭐ Dışarıdan yıldız butonuna aksiyon bağlamak için
   final VoidCallback? onFavoriteTap;
 
   /// Normal kullanım (mevcut kullanımın aynısı)
@@ -154,9 +157,7 @@ class _ListingCardState extends State<ListingCard> {
                 _buildImage(d),
 
                 // Orta: Detaylar
-                Expanded(
-                  child: _buildDetails(d),
-                ),
+                Expanded(child: _buildDetails(d)),
 
                 // Sağ: Konum, Tarih, Fiyat
                 _buildRightSection(d),
@@ -412,19 +413,24 @@ class _ListingCardState extends State<ListingCard> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // Favori
-              GestureDetector(
-                onTap: widget.onFavoriteTap,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Icon(
-                    d.isFavorite ? Icons.star : Icons.star_border,
-                    size: 16,
-                    color: Colors.white,
+
+              // Favori (✅ InkWell ile ripple + dışarıdan callback)
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: widget.onFavoriteTap,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Icon(
+                      d.isFavorite ? Icons.star : Icons.star_border,
+                      size: 16,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
