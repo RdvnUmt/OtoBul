@@ -14,8 +14,6 @@ class _SettingsPageState extends State<SettingsPage> {
   // Profile/Favorites ile uyumlu renkler
   static const _primary = Color(0xFF2060E0);
   static const _ink = Color(0xFF102030);
-  static const _fieldFill = Color(0xFFF6F7FB);
-  static const _border = Color(0xFFE7EAF2);
 
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
