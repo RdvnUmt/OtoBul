@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/data/mock_listings.dart';
 import '../../../core/models/listing_model.dart';
+import '../../../core/services/listing_service.dart';
 import '../widgets/app_sidebar.dart';
 import '../../../shared/app_footer.dart';
 import '../../../shared/widgets/listing_card.dart';
@@ -18,15 +19,69 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String? _selectedCategory;
   String? _selectedSubCategory;
+  
+  // API verisi
+  List<Listing> _apiListings = [];
+  bool _isLoading = true;
+  bool _useApi = true; // API mi Mock mu kullanılacak
+  String? _errorMessage;
+
+  final ListingService _listingService = ListingService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadListings();
+  }
+
+  /// API'den ilanları yükle
+  Future<void> _loadListings() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      List<Listing> listings;
+      
+      if (_selectedSubCategory != null) {
+        listings = await _listingService.getListingsBySubCategory(_selectedSubCategory!);
+      } else if (_selectedCategory != null) {
+        listings = await _listingService.getListingsByCategory(_selectedCategory!);
+      } else {
+        listings = await _listingService.getAllListings();
+      }
+
+      setState(() {
+        _apiListings = listings;
+        _isLoading = false;
+        _useApi = listings.isNotEmpty;
+      });
+    } catch (e) {
+      debugPrint('API Hatası: $e');
+      setState(() {
+        _isLoading = false;
+        _useApi = false;
+        _errorMessage = 'API bağlantısı kurulamadı. Mock veriler gösteriliyor.';
+      });
+    }
+  }
 
   void _onCategorySelected(String category, String? subCategory) {
     setState(() {
       _selectedCategory = category;
       _selectedSubCategory = subCategory;
     });
+    _loadListings(); // Kategori değişince yeniden yükle
   }
 
   List<Listing> _getListings() {
+    // API verisi varsa onu kullan, yoksa mock data
+    if (_useApi && _apiListings.isNotEmpty) {
+      return _apiListings;
+    }
+    
+    // Fallback: Mock data
     return MockListings.getListings(
       category: _selectedCategory,
       subCategory: _selectedSubCategory,
@@ -54,12 +109,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMainContent() {
+    if (_isLoading) {
+      return _buildLoadingState();
+    }
+
     final listings = _getListings();
 
     return Column(
       children: [
         // Başlık Bar (Sabit)
         _buildHeader(listings.length),
+
+        // Hata mesajı banner
+        if (_errorMessage != null) _buildErrorBanner(),
 
         // İçerik Alanı (Scroll edilebilir - Footer dahil)
         Expanded(
@@ -71,40 +133,99 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildScrollableContent(List<Listing> listings) {
-    return CustomScrollView(
-      slivers: [
-        // İlan Listesi
-        SliverPadding(
-          padding: const EdgeInsets.all(24),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                if (index >= listings.length) return null;
-                final listing = listings[index];
-                return Padding(
-                  padding: EdgeInsets.only(bottom: index < listings.length - 1 ? 16 : 0),
-                  child: ListingCard(
-                    listing: listing,
-                    onTap: () {
-                      context.go('/ilan-detay/${listing.id}');
-                    },
-                    onFavoriteTap: () {
-                      debugPrint('Favori tıklandı: ${listing.title}');
-                    },
-                  ),
-                );
-              },
-              childCount: listings.length,
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(
+            color: AppColors.primary,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'İlanlar yükleniyor...',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppColors.textSecondary,
             ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
 
-        // Footer (En altta)
-        const SliverToBoxAdapter(
-          child: AppFooter(),
-        ),
-      ],
+  Widget _buildErrorBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: Colors.orange.shade100,
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.orange.shade800, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _errorMessage!,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: Colors.orange.shade900,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: _loadListings,
+            child: Text(
+              'Tekrar Dene',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScrollableContent(List<Listing> listings) {
+    return RefreshIndicator(
+      onRefresh: _loadListings,
+      color: AppColors.primary,
+      child: CustomScrollView(
+        slivers: [
+          // İlan Listesi
+          SliverPadding(
+            padding: const EdgeInsets.all(24),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  if (index >= listings.length) return null;
+                  final listing = listings[index];
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: index < listings.length - 1 ? 16 : 0),
+                    child: ListingCard(
+                      listing: listing,
+                      onTap: () {
+                        context.go('/ilan-detay/${listing.id}', extra: listing);
+                      },
+                      onFavoriteTap: () {
+                        debugPrint('Favori tıklandı: ${listing.title}');
+                      },
+                    ),
+                  );
+                },
+                childCount: listings.length,
+              ),
+            ),
+          ),
+
+          // Footer (En altta)
+          const SliverToBoxAdapter(
+            child: AppFooter(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -140,16 +261,37 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppColors.primary.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(
-              '$count ilan',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$count ilan',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+                if (_useApi && _apiListings.isNotEmpty) ...[
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.cloud_done_outlined,
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
+                ],
+              ],
             ),
           ),
           const Spacer(),
+          // Refresh butonu
+          IconButton(
+            onPressed: _loadListings,
+            icon: const Icon(Icons.refresh, size: 20),
+            color: AppColors.textSecondary,
+            tooltip: 'Yenile',
+          ),
+          const SizedBox(width: 8),
           // Sıralama Dropdown
           _buildSortDropdown(),
         ],
@@ -221,6 +363,16 @@ class _HomeScreenState extends State<HomeScreen> {
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: AppColors.textTertiary,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _loadListings,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Yeniden Dene'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
             ),
           ),
         ],

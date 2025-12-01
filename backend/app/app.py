@@ -12,7 +12,7 @@ pymysql.install_as_MySQLdb()
 def create_app():
     app = Flask(__name__)
 
-    app.config['SQLALCHEMY_DATABAE_URI'] = ''
+    app.config['SQLALCHEMY_DATABASE_URI'] = ''
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     CORS(app)

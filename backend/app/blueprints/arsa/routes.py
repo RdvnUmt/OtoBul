@@ -30,7 +30,7 @@ def update_arsa():
 
 @arsa_route.route("/get", methods=['GET'])
 def get_arsa():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     response = get_arsa_controller(data)
 
     return response

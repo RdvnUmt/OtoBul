@@ -30,7 +30,7 @@ def update_karavan():
 
 @karavan_route.route("/get", methods=['GET'])
 def get_karavan():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     response = get_karavan_controller(data)
 
     return response

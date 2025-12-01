@@ -30,7 +30,7 @@ def update_tir():
 
 @tir_route.route("/get", methods=['GET'])
 def get_tir():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     response = get_tir_controller(data)
 
     return response

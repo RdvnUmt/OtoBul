@@ -283,41 +283,26 @@ class _ListingCardState extends State<ListingCard> {
 
   Widget _buildVehicleDetails(Map<String, dynamic> details, String sellerType) {
     final km = details['km'];
-    final fuel = details['fuel'];
-    final gear = details['gear'];
-    final engineVolume = details['engineVolume'];
-    final enginePower = details['enginePower'];
-    final condition = details['condition'];
+    final fuel = details['yakit'];
+    final gear = details['vites'];
+    final engineVolume = details['motorHacmi'];
+    final enginePower = details['motorGucu'];
 
     return Column(
       children: [
         Row(
           children: [
-            if (km != null) _buildDetailItem('${_formatNumber(km)} km', AppColors.info),
-            if (km != null) const SizedBox(width: 24),
-            _buildDetailItem(sellerType, AppColors.textSecondary),
-            const SizedBox(width: 24),
-            if (fuel != null) _buildDetailItem(fuel, AppColors.textSecondary),
+            if (km != null) _buildDetailItem('${_formatNumber(km)} km'),
+            if (fuel != null) _buildDetailItem(fuel),
+            if (gear != null) _buildDetailItem(gear),
+            _buildDetailItem(sellerType),
           ],
         ),
         const SizedBox(height: 6),
         Row(
           children: [
-            if (gear != null) _buildDetailItem(gear, AppColors.textSecondary),
-            if (gear != null) const SizedBox(width: 24),
-            if (engineVolume != null) _buildDetailItem('$engineVolume cc', AppColors.textSecondary),
-            if (engineVolume != null) const SizedBox(width: 24),
-            if (enginePower != null) _buildDetailItem('$enginePower hp', AppColors.textSecondary),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            _buildDetailItem('Garantisi Yok', AppColors.textSecondary),
-            const SizedBox(width: 24),
-            _buildDetailItem('Önden Çekiş', AppColors.textSecondary),
-            const SizedBox(width: 24),
-            if (condition != null) _buildDetailItem(condition, AppColors.textSecondary),
+            if (engineVolume != null) _buildDetailItem('$engineVolume cc'),
+            if (enginePower != null) _buildDetailItem('$enginePower hp'),
           ],
         ),
       ],
@@ -325,62 +310,59 @@ class _ListingCardState extends State<ListingCard> {
   }
 
   Widget _buildPropertyDetails(Map<String, dynamic> details, String sellerType) {
-    final grossM2 = details['grossM2'];
-    final netM2 = details['netM2'];
-    final roomCount = details['roomCount'];
-    final buildingAge = details['buildingAge'];
-    final floor = details['floor'];
-    final heating = details['heating'];
+    final grossM2 = details['m2Brut'];
+    final netM2 = details['m2Net'];
+    final roomCount = details['odaSayisi'];
+    final buildingAge = details['binaYasi'];
+    final floor = details['bulunduguKat'];
+    final heating = details['isitma'];
+    // Arsa için özel alanlar
+    final imarDurumu = details['imarDurumu'];
 
     return Column(
       children: [
         Row(
           children: [
-            if (grossM2 != null) _buildDetailItem('$grossM2 m² (Brüt)', AppColors.info),
-            if (grossM2 != null) const SizedBox(width: 24),
-            if (netM2 != null) _buildDetailItem('$netM2 m² (Net)', AppColors.textSecondary),
-            if (netM2 != null) const SizedBox(width: 24),
-            if (roomCount != null) _buildDetailItem('$roomCount', AppColors.textSecondary),
+            if (grossM2 != null) _buildDetailItem('$grossM2 m² (Brüt)'),
+            if (netM2 != null) _buildDetailItem('$netM2 m² (Net)'),
+            if (roomCount != null) _buildDetailItem('$roomCount'),
+            _buildDetailItem(sellerType),
           ],
         ),
         const SizedBox(height: 6),
         Row(
           children: [
-            if (buildingAge != null) _buildDetailItem('$buildingAge Yaşında', AppColors.textSecondary),
-            if (buildingAge != null) const SizedBox(width: 24),
-            if (floor != null) _buildDetailItem('$floor. Kat', AppColors.textSecondary),
-            if (floor != null) const SizedBox(width: 24),
-            if (heating != null) _buildDetailItem(heating, AppColors.textSecondary),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            _buildDetailItem(sellerType, AppColors.textSecondary),
+            if (buildingAge != null) _buildDetailItem('$buildingAge Yaşında'),
+            if (floor != null) _buildDetailItem('$floor. Kat'),
+            if (heating != null) _buildDetailItem(heating),
+            if (imarDurumu != null) _buildDetailItem(imarDurumu),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildDetailItem(String text, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          Icons.arrow_forward_ios,
-          size: 10,
-          color: AppColors.accent,
-        ),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            color: color,
+  Widget _buildDetailItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 20),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.arrow_forward_ios,
+            size: 10,
+            color: AppColors.accent,
           ),
-        ),
-      ],
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

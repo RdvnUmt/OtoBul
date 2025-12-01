@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:my_flutter_app/core/data/mock_listings.dart';
+import 'package:my_flutter_app/core/models/listing_model.dart';
 
 import '../features/account/screens/account_shell.dart';
 
@@ -61,8 +62,8 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/ilan-detay/:id',
       pageBuilder: (context, state) {
-        final id = state.pathParameters['id'] ?? '';
-        return NoTransitionPage(child: ListingDetailScreen(listingId: id));
+        final listing = state.extra as Listing?;
+        return NoTransitionPage(child: ListingDetailScreen(listing: listing));
       },
     ),
 

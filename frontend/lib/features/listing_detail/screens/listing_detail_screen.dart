@@ -4,21 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '/core/theme/colors.dart';
 import '/core/models/listing_model.dart';
-import '/core/data/mock_listings.dart';
 import '/shared/app_footer.dart';
 
 class ListingDetailScreen extends StatelessWidget {
-  final String listingId;
+  final Listing? listing;
 
-  const ListingDetailScreen({super.key, required this.listingId});
-
-  Listing? _findListing() {
-    try {
-      return MockListings.allListings.firstWhere((l) => l.id == listingId);
-    } catch (_) {
-      return null;
-    }
-  }
+  const ListingDetailScreen({super.key, this.listing});
 
   /// HashCode -> string kısaysa substring patlamasın diye güvenli 8 hane üretir
   String _safeShortId(Object id) {
@@ -38,8 +29,6 @@ class ListingDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final listing = _findListing();
-
     if (listing == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
@@ -47,11 +36,18 @@ class ListingDetailScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: AppColors.textTertiary),
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: AppColors.textTertiary,
+              ),
               const SizedBox(height: 16),
               Text(
                 'İlan bulunamadı',
-                style: GoogleFonts.inter(fontSize: 18, color: AppColors.textSecondary),
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 24),
               TextButton(
@@ -68,12 +64,8 @@ class ListingDetailScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0D1117),
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(
-            child: _buildContent(context, listing),
-          ),
-          const SliverToBoxAdapter(
-            child: AppFooter(),
-          ),
+          SliverToBoxAdapter(child: _buildContent(context, listing!)),
+          const SliverToBoxAdapter(child: AppFooter()),
         ],
       ),
     );
@@ -87,26 +79,35 @@ class ListingDetailScreen extends StatelessWidget {
         children: [
           _buildBackButton(context),
           const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTitleCard(listing),
-                    const SizedBox(height: 16),
-                    _buildImage(listing),
-                    const SizedBox(height: 16),
-                    _buildFavoriteButton(),
-                  ],
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Sol taraf: Başlık (açıklama dahil), Görsel
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTitleCard(listing),
+                      const SizedBox(height: 16),
+                      Expanded(child: _buildImage(listing)),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 32),
-              Expanded(
-                child: _buildDescriptionAndDetails(listing),
-              ),
-            ],
+                const SizedBox(width: 32),
+                // Sağ taraf: İlan Detayları, Favori Butonu
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: _buildDetailsCard(listing)),
+                      const SizedBox(height: 16),
+                      _buildFavoriteButton(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -147,49 +148,103 @@ class ListingDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF30363D)),
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            listing.title,
-            style: GoogleFonts.inter(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFFF0F6FC),
+          // Sol: Başlık, Fiyat, Açıklama
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  listing.title,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFFF0F6FC),
+                  ),
+                ),
+                const Divider(color: Color(0xFF30363D), height: 10),
+                const SizedBox(height: 10),
+                Text(
+                  'Açıklama',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFF0F6FC),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  listing.description,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    height: 1.6,
+                    color: const Color(0xFFC9D1D9),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _formatPrice(listing.price),
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFFF6B6B),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'İlan No: $listingNo',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: const Color(0xFF8B949E),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            _formatPrice(listing.price),
-            style: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFFFF6B6B),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
+          const SizedBox(width: 24),
+          // Sağ: İlan No, Adres, Tarih
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Icon(Icons.location_on_outlined, size: 16, color: Color(0xFF8B949E)),
-              const SizedBox(width: 4),
               Text(
-                '${listing.city} / ${listing.district}',
-                style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF8B949E)),
+                'İlan No: $listingNo',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: const Color(0xFF8B949E),
+                ),
               ),
-              const SizedBox(width: 16),
-              const Icon(Icons.calendar_today_outlined, size: 16, color: Color(0xFF8B949E)),
-              const SizedBox(width: 4),
-              Text(
-                _formatDate(listing.createdAt),
-                style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF8B949E)),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.location_on_outlined,
+                    size: 16,
+                    color: Color(0xFF8B949E),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${listing.city} / ${listing.district}',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: const Color(0xFF8B949E),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 16,
+                    color: Color(0xFF8B949E),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _formatDate(listing.createdAt),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: const Color(0xFF8B949E),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -200,7 +255,7 @@ class ListingDetailScreen extends StatelessWidget {
 
   Widget _buildImage(Listing listing) {
     return Container(
-      height: 350,
+      constraints: const BoxConstraints(minHeight: 300),
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
@@ -243,8 +298,12 @@ class ListingDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDescriptionAndDetails(Listing listing) {
+  /// İlan detayları kartı (sağ tarafta)
+  Widget _buildDetailsCard(Listing listing) {
     final isVehicle = listing.category == 'vasita';
+    final details = isVehicle
+        ? _getVehicleDetailItems(listing)
+        : _getPropertyDetailItems(listing);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -257,131 +316,205 @@ class ListingDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Açıklama',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFFF0F6FC),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            listing.description,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              height: 1.6,
-              color: const Color(0xFFC9D1D9),
-            ),
-          ),
-          const Divider(color: Color(0xFF30363D), height: 32),
-          Text(
             'İlan Detayları',
             style: GoogleFonts.inter(
-              fontSize: 16,
+              fontSize: 20,
               fontWeight: FontWeight.w600,
               color: const Color(0xFFF0F6FC),
             ),
           ),
-          const SizedBox(height: 16),
-          if (isVehicle) _buildVehicleDetails(listing) else _buildPropertyDetails(listing),
+          const SizedBox(height: 10),
+          const Divider(color: Color(0xFF30363D), height: 4),
+          const SizedBox(height: 10),
+          Expanded(child: _buildTwoColumnDetails(details)),
         ],
       ),
     );
   }
 
-  Widget _buildVehicleDetails(Listing listing) {
-    final d = listing.details;
-    final listingNo = _safeShortId(listing.id);
+  /// İki sütunlu detay gösterimi
+  Widget _buildTwoColumnDetails(List<MapEntry<String, String>> details) {
+    final leftColumn = <MapEntry<String, String>>[];
+    final rightColumn = <MapEntry<String, String>>[];
 
-    return Column(
+    for (int i = 0; i < details.length; i++) {
+      if (i % 2 == 0) {
+        leftColumn.add(details[i]);
+      } else {
+        rightColumn.add(details[i]);
+      }
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDetailRow('İlan No', listingNo),
-        _buildDetailRow('İlan Tarihi', _formatDate(listing.createdAt)),
-        const Divider(color: Color(0xFF30363D), height: 24),
-        if (d['brand'] != null) _buildDetailRow('Marka', d['brand']),
-        if (d['model'] != null) _buildDetailRow('Model', d['model']),
-        if (d['year'] != null) _buildDetailRow('Model Yılı', d['year'].toString()),
-        const Divider(color: Color(0xFF30363D), height: 24),
-        if (d['km'] != null)
-          _buildDetailRow('Kilometre', '${NumberFormat('#,###', 'tr_TR').format(d['km'])} km'),
-        if (d['fuel'] != null) _buildDetailRow('Yakıt Tipi', d['fuel']),
-        if (d['gear'] != null) _buildDetailRow('Vites', d['gear']),
-        if (d['engineVolume'] != null) _buildDetailRow('Motor Hacmi', '${d['engineVolume']} cc'),
-        if (d['enginePower'] != null) _buildDetailRow('Motor Gücü', '${d['enginePower']} hp'),
-        if (d['color'] != null) _buildDetailRow('Renk', d['color']),
-        if (d['condition'] != null) _buildDetailRow('Araç Durumu', d['condition']),
-        const Divider(color: Color(0xFF30363D), height: 24),
-        _buildDetailRow('Kimden', listing.sellerType),
-        _buildDetailRow('Ağır Hasar Kaydı', d['heavyDamage'] == true ? 'Var' : 'Yok'),
-        _buildDetailRow('Garanti', d['warranty'] ?? 'Garantisi Yok'),
-        _buildDetailRow('Plaka / Uyruk', d['plateOrigin'] ?? 'Türkiye'),
-        _buildDetailRow('Takas', 'Yapılır'),
-        _buildDetailRow('Kredi Uygunluğu', 'Uygun'),
-        if (d['bodyType'] != null) _buildDetailRow('Kasa Tipi', d['bodyType']),
-        if (d['drivetrain'] != null) _buildDetailRow('Çekiş', d['drivetrain']),
-        if (d['cylinderCount'] != null) _buildDetailRow('Silindir Sayısı', d['cylinderCount'].toString()),
-        if (d['cooling'] != null) _buildDetailRow('Soğutma', d['cooling']),
-        if (d['bedCount'] != null && listing.subCategory == 'karavan')
-          _buildDetailRow('Yatak Sayısı', d['bedCount'].toString()),
-        if (d['type'] != null) _buildDetailRow('Karavan Türü', d['type']),
-        if (d['caravanType'] != null) _buildDetailRow('Karavan Tipi', d['caravanType']),
-        if (d['cabinType'] != null) _buildDetailRow('Kabin', d['cabinType']),
-        if (d['tireCondition'] != null) _buildDetailRow('Lastik Durumu', '%${d['tireCondition']}'),
-        if (d['hasTrailer'] != null) _buildDetailRow('Dorse', d['hasTrailer'] == true ? 'Var' : 'Yok'),
+        Expanded(
+          child: Column(
+            children: leftColumn
+                .map((e) => _buildDetailRow(e.key, e.value))
+                .toList(),
+          ),
+        ),
+        const Divider(color: Color(0xFF30363D), height: 10),
+        const SizedBox(width: 24),
+        Expanded(
+          child: Column(
+            children: rightColumn
+                .map((e) => _buildDetailRow(e.key, e.value))
+                .toList(),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildPropertyDetails(Listing listing) {
+  List<MapEntry<String, String>> _getVehicleDetailItems(Listing listing) {
     final d = listing.details;
     final listingNo = _safeShortId(listing.id);
+    final items = <MapEntry<String, String>>[];
 
-    return Column(
-      children: [
-        _buildDetailRow('İlan No', listingNo),
-        _buildDetailRow('İlan Tarihi', _formatDate(listing.createdAt)),
-        const Divider(color: Color(0xFF30363D), height: 24),
-        if (d['grossM2'] != null) _buildDetailRow('m² (Brüt)', '${d['grossM2']} m²'),
-        if (d['netM2'] != null) _buildDetailRow('m² (Net)', '${d['netM2']} m²'),
-        if (d['deedStatus'] != null) _buildDetailRow('Tapu Durumu', d['deedStatus']),
-        const Divider(color: Color(0xFF30363D), height: 24),
-        if (d['roomCount'] != null) _buildDetailRow('Oda Sayısı', d['roomCount']),
-        if (d['buildingAge'] != null) _buildDetailRow('Bina Yaşı', '${d['buildingAge']} yaşında'),
-        if (d['floor'] != null) _buildDetailRow('Bulunduğu Kat', '${d['floor']}. Kat'),
-        if (d['totalFloors'] != null) _buildDetailRow('Kat Sayısı', d['totalFloors'].toString()),
-        if (d['heating'] != null) _buildDetailRow('Isıtma', d['heating']),
-        if (d['bathroomCount'] != null) _buildDetailRow('Banyo Sayısı', d['bathroomCount'].toString()),
-        if (d['kitchenType'] != null) _buildDetailRow('Mutfak Tipi', d['kitchenType']),
-        if (d['hasParking'] != null) _buildDetailRow('Otopark', d['hasParking'] == true ? 'Var' : 'Yok'),
-        if (d['hasElevator'] != null) _buildDetailRow('Asansör', d['hasElevator'] == true ? 'Var' : 'Yok'),
-        if (d['hasBalcony'] != null) _buildDetailRow('Balkon', d['hasBalcony'] == true ? 'Var' : 'Yok'),
-        if (d['isFurnished'] != null) _buildDetailRow('Eşyalı', d['isFurnished'] == true ? 'Evet' : 'Hayır'),
-        if (d['usageStatus'] != null) _buildDetailRow('Kullanım Durumu', d['usageStatus']),
-        if (d['isInComplex'] != null) _buildDetailRow('Site İçinde', d['isInComplex'] == true ? 'Evet' : 'Hayır'),
-        if (d['complexName'] != null && d['complexName'] != '') _buildDetailRow('Site Adı', d['complexName']),
-        if (d['dues'] != null && d['dues'] > 0) _buildDetailRow('Aidat', '${d['dues']} TL'),
-        const Divider(color: Color(0xFF30363D), height: 24),
-        if (d['zoningStatus'] != null) _buildDetailRow('İmar Durumu', d['zoningStatus']),
-        if (d['blockNo'] != null) _buildDetailRow('Ada No', d['blockNo'].toString()),
-        if (d['parcelNo'] != null) _buildDetailRow('Parsel No', d['parcelNo'].toString()),
-        if (d['floorAreaRatio'] != null) _buildDetailRow('Kaks (Emsal)', d['floorAreaRatio']),
-        if (d['area'] != null) _buildDetailRow('Alan', '${d['area']} m²'),
-        if (d['roomCount'] != null && listing.subCategory == 'turistik')
-          _buildDetailRow('Oda Sayısı', d['roomCount'].toString()),
-        if (d['bedCount'] != null) _buildDetailRow('Yatak Sayısı', d['bedCount'].toString()),
-        if (d['openArea'] != null) _buildDetailRow('Açık Alan', '${d['openArea']} m²'),
-        if (d['closedArea'] != null) _buildDetailRow('Kapalı Alan', '${d['closedArea']} m²'),
-        if (d['hasPool'] != null) _buildDetailRow('Havuz', d['hasPool'] == true ? 'Var' : 'Yok'),
-        if (d['starRating'] != null) _buildDetailRow('Yıldız', '${d['starRating']} Yıldız'),
-        if (d['buildingStatus'] != null) _buildDetailRow('Yapı Durumu', d['buildingStatus']),
-        if (d['period'] != null) _buildDetailRow('Dönem', d['period']),
-        if (d['capacity'] != null) _buildDetailRow('Kapasite', '${d['capacity']} Kişi'),
-        const Divider(color: Color(0xFF30363D), height: 24),
-        _buildDetailRow('Kimden', listing.sellerType),
-        _buildDetailRow('Takas', 'Yapılır'),
-        _buildDetailRow('Kredi Uygunluğu', 'Uygun'),
-      ],
+    items.add(MapEntry('İlan No', listingNo));
+    items.add(MapEntry('İlan Tarihi', _formatDate(listing.createdAt)));
+    if (d['markaName'] != null) items.add(MapEntry('Marka', d['markaName']));
+    if (d['seriIsmi'] != null) items.add(MapEntry('Seri', d['seriIsmi']));
+    if (d['modelIsmi'] != null) items.add(MapEntry('Model', d['modelIsmi']));
+    if (d['modelYili'] != null)
+      items.add(MapEntry('Model Yılı', d['modelYili'].toString()));
+    if (d['mensei'] != null) items.add(MapEntry('Menşei', d['mensei']));
+    if (d['km'] != null)
+      items.add(
+        MapEntry(
+          'Kilometre',
+          '${NumberFormat('#,###', 'tr_TR').format(d['km'])} km',
+        ),
+      );
+    if (d['yakit'] != null) items.add(MapEntry('Yakıt Tipi', d['yakit']));
+    if (d['vites'] != null) items.add(MapEntry('Vites', d['vites']));
+    if (d['motorHacmi'] != null)
+      items.add(MapEntry('Motor Hacmi', '${d['motorHacmi']} cc'));
+    if (d['motorGucu'] != null)
+      items.add(MapEntry('Motor Gücü', '${d['motorGucu']} hp'));
+    if (d['renk'] != null) items.add(MapEntry('Renk', d['renk']));
+    if (d['aracDurumu'] != null)
+      items.add(MapEntry('Araç Durumu', d['aracDurumu']));
+    items.add(MapEntry('Kimden', listing.sellerType));
+    items.add(
+      MapEntry('Ağır Hasar Kaydı', d['agirHasar'] == true ? 'Var' : 'Yok'),
     );
+    items.add(MapEntry('Garanti', d['garanti'] ?? 'Garantisi Yok'));
+    items.add(MapEntry('Plaka / Uyruk', d['plakaUyruk'] ?? 'Türkiye'));
+    items.add(MapEntry('Takas', listing.takas ? 'Yapılır' : 'Yapılmaz'));
+    items.add(
+      MapEntry(
+        'Kredi Uygunluğu',
+        listing.krediUygunlugu ? 'Uygun' : 'Uygun Değil',
+      ),
+    );
+    if (d['kasaTipi'] != null) items.add(MapEntry('Kasa Tipi', d['kasaTipi']));
+    if (d['cekis'] != null) items.add(MapEntry('Çekiş', d['cekis']));
+    if (d['silindirSayisi'] != null)
+      items.add(MapEntry('Silindir Sayısı', d['silindirSayisi'].toString()));
+    if (d['sogutma'] != null) items.add(MapEntry('Soğutma', d['sogutma']));
+    if (d['yatakSayisiKaravan'] != null && listing.subCategory == 'karavan')
+      items.add(MapEntry('Yatak Sayısı', d['yatakSayisiKaravan'].toString()));
+    if (d['karavanTuru'] != null)
+      items.add(MapEntry('Karavan Türü', d['karavanTuru']));
+    if (d['karavanTipi'] != null)
+      items.add(MapEntry('Karavan Tipi', d['karavanTipi']));
+    if (d['kabin'] != null) items.add(MapEntry('Kabin', d['kabin']));
+    if (d['lastikYuzde'] != null)
+      items.add(MapEntry('Lastik Durumu', '%${d['lastikYuzde']}'));
+    if (d['dorse'] != null)
+      items.add(MapEntry('Dorse', d['dorse'] == true ? 'Var' : 'Yok'));
+    if (d['yatakSayisiTir'] != null && listing.subCategory == 'tir')
+      items.add(MapEntry('Yatak Sayısı', d['yatakSayisiTir'].toString()));
+
+    return items;
+  }
+
+  List<MapEntry<String, String>> _getPropertyDetailItems(Listing listing) {
+    final d = listing.details;
+    final listingNo = _safeShortId(listing.id);
+    final items = <MapEntry<String, String>>[];
+
+    items.add(MapEntry('İlan No', listingNo));
+    items.add(MapEntry('İlan Tarihi', _formatDate(listing.createdAt)));
+    if (d['m2Brut'] != null)
+      items.add(MapEntry('m² (Brüt)', '${d['m2Brut']} m²'));
+    if (d['m2Net'] != null) items.add(MapEntry('m² (Net)', '${d['m2Net']} m²'));
+    if (d['tapuDurumu'] != null)
+      items.add(MapEntry('Tapu Durumu', d['tapuDurumu']));
+    // Konut / Yerleşke detayları
+    if (d['odaSayisi'] != null)
+      items.add(MapEntry('Oda Sayısı', d['odaSayisi'].toString()));
+    if (d['binaYasi'] != null)
+      items.add(MapEntry('Bina Yaşı', '${d['binaYasi']} yaşında'));
+    if (d['bulunduguKat'] != null)
+      items.add(MapEntry('Bulunduğu Kat', '${d['bulunduguKat']}. Kat'));
+    if (d['katSayisi'] != null)
+      items.add(MapEntry('Kat Sayısı', d['katSayisi'].toString()));
+    if (d['isitma'] != null) items.add(MapEntry('Isıtma', d['isitma']));
+    if (d['banyoSayisi'] != null)
+      items.add(MapEntry('Banyo Sayısı', d['banyoSayisi'].toString()));
+    if (d['mutfakTipi'] != null)
+      items.add(MapEntry('Mutfak Tipi', d['mutfakTipi']));
+    if (d['otopark'] != null)
+      items.add(MapEntry('Otopark', d['otopark'] == true ? 'Var' : 'Yok'));
+    if (d['asansor'] != null)
+      items.add(MapEntry('Asansör', d['asansor'] == true ? 'Var' : 'Yok'));
+    if (d['balkon'] != null)
+      items.add(MapEntry('Balkon', d['balkon'] == true ? 'Var' : 'Yok'));
+    if (d['esyali'] != null)
+      items.add(MapEntry('Eşyalı', d['esyali'] == true ? 'Evet' : 'Hayır'));
+    if (d['kullanimDurumu'] != null)
+      items.add(MapEntry('Kullanım Durumu', d['kullanimDurumu']));
+    if (d['siteIcinde'] != null)
+      items.add(
+        MapEntry('Site İçinde', d['siteIcinde'] == true ? 'Evet' : 'Hayır'),
+      );
+    if (d['siteAdi'] != null && d['siteAdi'] != '')
+      items.add(MapEntry('Site Adı', d['siteAdi']));
+    if (d['aidat'] != null && d['aidat'] > 0)
+      items.add(MapEntry('Aidat', '${d['aidat']} TL'));
+    // Arsa detayları
+    if (d['imarDurumu'] != null)
+      items.add(MapEntry('İmar Durumu', d['imarDurumu']));
+    if (d['adaNo'] != null)
+      items.add(MapEntry('Ada No', d['adaNo'].toString()));
+    if (d['parselNo'] != null)
+      items.add(MapEntry('Parsel No', d['parselNo'].toString()));
+    if (d['paftaNo'] != null)
+      items.add(MapEntry('Pafta No', d['paftaNo'].toString()));
+    if (d['kaksEmsal'] != null)
+      items.add(MapEntry('Kaks (Emsal)', d['kaksEmsal']));
+    if (d['gabari'] != null) items.add(MapEntry('Gabari', d['gabari']));
+    // Turistik Tesis detayları
+    if (d['apartSayisi'] != null && d['apartSayisi'] > 0)
+      items.add(MapEntry('Apart Sayısı', d['apartSayisi'].toString()));
+    if (d['yatakSayisi'] != null)
+      items.add(MapEntry('Yatak Sayısı', d['yatakSayisi'].toString()));
+    if (d['acikAlanM2'] != null)
+      items.add(MapEntry('Açık Alan', '${d['acikAlanM2']} m²'));
+    if (d['kapaliAlanM2'] != null)
+      items.add(MapEntry('Kapalı Alan', '${d['kapaliAlanM2']} m²'));
+    if (d['zeminEtudu'] != null)
+      items.add(
+        MapEntry('Zemin Etüdü', d['zeminEtudu'] == true ? 'Var' : 'Yok'),
+      );
+    if (d['yapiDurumu'] != null)
+      items.add(MapEntry('Yapı Durumu', d['yapiDurumu']));
+    // Devre Mülk detayları
+    if (d['devreDonem'] != null) items.add(MapEntry('Dönem', d['devreDonem']));
+    items.add(MapEntry('Kimden', listing.sellerType));
+    items.add(MapEntry('Takas', listing.takas ? 'Yapılır' : 'Yapılmaz'));
+    items.add(
+      MapEntry(
+        'Kredi Uygunluğu',
+        listing.krediUygunlugu ? 'Uygun' : 'Uygun Değil',
+      ),
+    );
+
+    return items;
   }
 
   Widget _buildDetailRow(String label, String value) {

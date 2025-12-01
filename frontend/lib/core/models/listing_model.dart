@@ -1,6 +1,6 @@
-/// İlan Modeli - DB şemasına uyumlu + UI için pratik alanlar
-/// Not: details map'i hem "draft key'leri" hem de eski mock key'lerini içerir.
-/// Böylece edit seed / listing card gibi yerler kırılmaz.
+// İlan Modeli - DB şemasına uyumlu + UI için pratik alanlar
+// Not: details map'i hem "draft key'leri" hem de eski mock key'lerini içerir.
+// Böylece edit seed / listing card gibi yerler kırılmaz.
 
 enum IlanTipi {
   satilik(1, 'Satılık'),
