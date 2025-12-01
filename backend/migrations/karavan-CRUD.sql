@@ -1,0 +1,78 @@
+-- Karavan CRUD
+
+use Bil372Proje;
+
+START TRANSACTION;
+-- CREATE Karavan
+-- Adres, Kategori, İlan, Marka, Seri, Model, Vasıta İlan, Karavan
+
+INSERT INTO adres (ulke,sehir,ilce,mahalle,cadde,sokak,bina_no,daire_no, posta_kodu ,olusturulma_tarihi ,guncellenme_tarihi)
+VALUES ("Türkiye","Ankara","Çankaya","Beştepe", "Söğütözü","22",12,"612","06560",NOW(), NOW());
+
+SET @address_id = last_insert_id();
+
+INSERT INTO kategori(kategori_ismi, olusturulma_tarihi, guncellenme_tarihi) VALUES ("Otomobil", NOW(), NOW());
+
+INSERT INTO Ilan (kullanici_id,adres_id,baslik,aciklama ,fiyat,kategori_id,ilan_tipi,kredi_uygunlugu ,kimden ,takas,
+					olusturulma_tarihi ,guncellenme_tarihi) VALUES 
+(2,@address_id,"Araç satılık", "Aracımız 144Hpdir temizdir sadedir!", 1450000, last_insert_id(), 2, 0, 1, 1, NOW(), NOW());
+
+SET @id_ilan = last_insert_id();
+
+INSERT INTO marka(marka_name,olusturulma_tarihi) VALUES ("Peugot",NOW());
+
+INSERT INTO seri(marka_id, seri_ismi,olusturulma_tarihi) VALUES (last_insert_id(),"T3",NOW());
+
+INSERT INTO model(seri_id, model_yili, mensei, model_ismi, olusturulma_tarihi)
+			VALUES (last_insert_id(),2004,"Fransa","Transporter", NOW());
+
+INSERT INTO Vasita_Ilan (ilan_id,vasita_tipi,model_id ,yakit_tipi ,vites,arac_durumu ,km ,motor_gucu ,motor_hacmi,renk,garanti, 
+							agir_hasar_kaydi,plaka_uyruk,olusturulma_tarihi,guncellenme_tarihi) VALUES
+(@id_ilan,"Araç",last_insert_id(),"Benzin", "R4", "İyi", 10500,100,2500,"kırmızı","3 yıl",1,"TR",NOW(),NOW());         
+-- Vasıta ilan kaldırıldı ilan_id yi nasıl bulacaz düşün
+-- İlan id / İlan id / ilan id
+
+
+INSERT INTO Karavan(vasita_id,yatak_sayisi,karavan_turu,karavan_tipi,olusturulma_tarihi ,guncellenme_tarihi)
+VALUES (last_insert_id(),2, "Motokaravan", "Yatmalık", NOW(), NOW());
+
+COMMIT;  
+
+-- KARAVAN SELECT
+SELECT * FROM karavan 
+INNER JOIN vasita_ilan ON vasita_ilan.vasita_id = karavan.vasita_id
+INNER JOIN ilan ON vasita_ilan.ilan_id = ilan.ilan_id
+INNER JOIN adres ON ilan.adres_id = adres.adres_id
+INNER JOIN kategori ON kategori.kategori_id = ilan.kategori_id
+INNER JOIN model ON vasita_ilan.model_id = model.model_id
+INNER JOIN seri ON model.seri_id = seri.seri_id
+INNER JOIN marka ON marka.marka_id = seri.marka_id; 
+
+-- UPDATE (karavan,vasita_ilan,ilan,adres,kategori,model,seri,marka) .... 
+UPDATE karavan
+INNER JOIN vasita_ilan ON vasita_ilan.vasita_id = karavan.vasita_id
+INNER JOIN ilan ON vasita_ilan.ilan_id = ilan.ilan_id
+INNER JOIN adres ON ilan.adres_id = adres.adres_id
+INNER JOIN kategori ON kategori.kategori_id = ilan.kategori_id
+INNER JOIN model ON vasita_ilan.model_id = model.model_id
+INNER JOIN seri ON model.seri_id = seri.seri_id
+INNER JOIN marka ON marka.marka_id = seri.marka_id 
+SET marka_name = 'Deneme31', vasita_tipi = "Adam olma GAzoz Ol!"
+WHERE karavan.kara_id = 1;
+
+-- Silme işlemi için ilan kategori adres ve markanın silinmesi yeterli
+DELETE ilan,kategori,adres, marka
+FROM karavan 
+INNER JOIN vasita_ilan ON vasita_ilan.vasita_id = karavan.vasita_id
+INNER JOIN ilan ON vasita_ilan.ilan_id = ilan.ilan_id
+INNER JOIN adres ON ilan.adres_id = adres.adres_id
+INNER JOIN kategori ON kategori.kategori_id = ilan.kategori_id
+INNER JOIN model ON vasita_ilan.model_id = model.model_id
+INNER JOIN seri ON model.seri_id = seri.seri_id
+INNER JOIN marka ON marka.marka_id = seri.marka_id
+WHERE karavan.kara_id = 1; 
+
+
+
+
+
