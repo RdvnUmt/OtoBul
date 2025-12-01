@@ -20,6 +20,13 @@ class ListingDetailScreen extends StatelessWidget {
     }
   }
 
+  /// HashCode -> string kısaysa substring patlamasın diye güvenli 8 hane üretir
+  String _safeShortId(Object id) {
+    final s = id.hashCode.abs().toString();
+    if (s.length >= 8) return s.substring(0, 8);
+    return s.padLeft(8, '0');
+  }
+
   String _formatPrice(double price) {
     final formatter = NumberFormat('#,###', 'tr_TR');
     return '${formatter.format(price)} TL';
@@ -78,15 +85,11 @@ class ListingDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Geri Butonu
           _buildBackButton(context),
           const SizedBox(height: 24),
-
-          // Ana İçerik: Sol ve Sağ eşit bölünmüş
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Sol: Başlık + Resim + Favori Butonu
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,8 +103,6 @@ class ListingDetailScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 32),
-
-              // Sağ: Açıklama + Detaylar (Tek Kart)
               Expanded(
                 child: _buildDescriptionAndDetails(listing),
               ),
@@ -137,6 +138,8 @@ class ListingDetailScreen extends StatelessWidget {
   }
 
   Widget _buildTitleCard(Listing listing) {
+    final listingNo = _safeShortId(listing.id);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -157,7 +160,7 @@ class ListingDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'İlan No: ${listing.id.hashCode.abs().toString().substring(0, 8)}',
+            'İlan No: $listingNo',
             style: GoogleFonts.inter(
               fontSize: 13,
               color: const Color(0xFF8B949E),
@@ -253,7 +256,6 @@ class ListingDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Açıklama
           Text(
             'Açıklama',
             style: GoogleFonts.inter(
@@ -272,8 +274,6 @@ class ListingDetailScreen extends StatelessWidget {
             ),
           ),
           const Divider(color: Color(0xFF30363D), height: 32),
-
-          // İlan Detayları
           Text(
             'İlan Detayları',
             style: GoogleFonts.inter(
@@ -283,10 +283,7 @@ class ListingDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          if (isVehicle)
-            _buildVehicleDetails(listing)
-          else
-            _buildPropertyDetails(listing),
+          if (isVehicle) _buildVehicleDetails(listing) else _buildPropertyDetails(listing),
         ],
       ),
     );
@@ -294,17 +291,19 @@ class ListingDetailScreen extends StatelessWidget {
 
   Widget _buildVehicleDetails(Listing listing) {
     final d = listing.details;
+    final listingNo = _safeShortId(listing.id);
 
     return Column(
       children: [
-        _buildDetailRow('İlan No', listing.id.hashCode.abs().toString().substring(0, 8)),
+        _buildDetailRow('İlan No', listingNo),
         _buildDetailRow('İlan Tarihi', _formatDate(listing.createdAt)),
         const Divider(color: Color(0xFF30363D), height: 24),
         if (d['brand'] != null) _buildDetailRow('Marka', d['brand']),
         if (d['model'] != null) _buildDetailRow('Model', d['model']),
         if (d['year'] != null) _buildDetailRow('Model Yılı', d['year'].toString()),
         const Divider(color: Color(0xFF30363D), height: 24),
-        if (d['km'] != null) _buildDetailRow('Kilometre', '${NumberFormat('#,###', 'tr_TR').format(d['km'])} km'),
+        if (d['km'] != null)
+          _buildDetailRow('Kilometre', '${NumberFormat('#,###', 'tr_TR').format(d['km'])} km'),
         if (d['fuel'] != null) _buildDetailRow('Yakıt Tipi', d['fuel']),
         if (d['gear'] != null) _buildDetailRow('Vites', d['gear']),
         if (d['engineVolume'] != null) _buildDetailRow('Motor Hacmi', '${d['engineVolume']} cc'),
@@ -335,10 +334,11 @@ class ListingDetailScreen extends StatelessWidget {
 
   Widget _buildPropertyDetails(Listing listing) {
     final d = listing.details;
+    final listingNo = _safeShortId(listing.id);
 
     return Column(
       children: [
-        _buildDetailRow('İlan No', listing.id.hashCode.abs().toString().substring(0, 8)),
+        _buildDetailRow('İlan No', listingNo),
         _buildDetailRow('İlan Tarihi', _formatDate(listing.createdAt)),
         const Divider(color: Color(0xFF30363D), height: 24),
         if (d['grossM2'] != null) _buildDetailRow('m² (Brüt)', '${d['grossM2']} m²'),

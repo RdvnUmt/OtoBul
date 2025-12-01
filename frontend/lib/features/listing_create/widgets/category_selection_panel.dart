@@ -14,6 +14,7 @@ class CategorySelectionPanel extends StatelessWidget {
     required this.vasitaCategory,
     required this.emlakCategory,
     required this.onChanged,
+    this.enabled = true, // ✅ edit modunda kilitlemek için
   });
 
   final ListingMainCategory mainCategory;
@@ -21,60 +22,71 @@ class CategorySelectionPanel extends StatelessWidget {
   final ListingEmlakCategory emlakCategory;
   final CategoryChanged onChanged;
 
+  /// false ise tüm panel "read-only" olur (tıklanamaz) + opacity düşer
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Kategori Seçimi', style: theme.textTheme.titleLarge),
+        const SizedBox(height: 12),
+
+        SegmentedButton<ListingMainCategory>(
+          segments: const [
+            ButtonSegment(
+              value: ListingMainCategory.emlak,
+              label: Text('Emlak'),
+              icon: Icon(Icons.home_rounded),
+            ),
+            ButtonSegment(
+              value: ListingMainCategory.vasita,
+              label: Text('Vasıta'),
+              icon: Icon(Icons.directions_car_rounded),
+            ),
+          ],
+          selected: {mainCategory},
+          onSelectionChanged: (set) {
+            final next = set.first;
+            onChanged(next, vasitaCategory, emlakCategory);
+          },
+        ),
+
+        const SizedBox(height: 12),
+        Divider(color: theme.colorScheme.outlineVariant),
+        const SizedBox(height: 8),
+
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          child: mainCategory == ListingMainCategory.vasita
+              ? _VasitaSubcategory(
+                  key: const ValueKey('vasita'),
+                  value: vasitaCategory,
+                  onChanged: (v) => onChanged(mainCategory, v, emlakCategory),
+                )
+              : _EmlakSubcategory(
+                  key: const ValueKey('emlak'),
+                  value: emlakCategory,
+                  onChanged: (v) => onChanged(mainCategory, vasitaCategory, v),
+                ),
+        ),
+      ],
+    );
 
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Kategori Seçimi', style: theme.textTheme.titleLarge),
-            const SizedBox(height: 12),
-
-            SegmentedButton<ListingMainCategory>(
-              segments: const [
-                ButtonSegment(
-                  value: ListingMainCategory.emlak,
-                  label: Text('Emlak'),
-                  icon: Icon(Icons.home_rounded),
-                ),
-                ButtonSegment(
-                  value: ListingMainCategory.vasita,
-                  label: Text('Vasıta'),
-                  icon: Icon(Icons.directions_car_rounded),
-                ),
-              ],
-              selected: {mainCategory},
-              onSelectionChanged: (set) {
-                final next = set.first;
-                onChanged(next, vasitaCategory, emlakCategory);
-              },
-            ),
-
-            const SizedBox(height: 12),
-            Divider(color: theme.colorScheme.outlineVariant),
-            const SizedBox(height: 8),
-
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 220),
-              child: mainCategory == ListingMainCategory.vasita
-                  ? _VasitaSubcategory(
-                      key: const ValueKey('vasita'),
-                      value: vasitaCategory,
-                      onChanged: (v) => onChanged(mainCategory, v, emlakCategory),
-                    )
-                  : _EmlakSubcategory(
-                      key: const ValueKey('emlak'),
-                      value: emlakCategory,
-                      onChanged: (v) => onChanged(mainCategory, vasitaCategory, v),
-                    ),
-            ),
-          ],
+        child: AbsorbPointer(
+          absorbing: !enabled,
+          child: Opacity(
+            opacity: enabled ? 1 : 0.55,
+            child: content,
+          ),
         ),
       ),
     );

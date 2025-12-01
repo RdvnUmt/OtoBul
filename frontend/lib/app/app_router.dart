@@ -80,11 +80,12 @@ final GoRouter appRouter = GoRouter(
           const NoTransitionPage(child: RegisterScreen()),
     ),
 
-    // İlan Ver
+    // İlan Ver (Create + Edit)
     GoRoute(
       path: AppRoutes.listingCreate,
-      pageBuilder: (context, state) =>
-          const NoTransitionPage(child: ListingCreateScreen()),
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: ListingCreateScreen(initialExtra: state.extra), // ✅ extra geçir
+      ),
     ),
 
     // /hesabim yazılırsa profile'a yönlendir
@@ -111,8 +112,8 @@ final GoRouter appRouter = GoRouter(
           path: AppRoutes.listings,
           pageBuilder: (context, state) => NoTransitionPage(
             child: MyListingsPage(
-              myListings: MockListings.konutListings, // örnek
-              onEditTap: (l) { },
+              myListings: MockListings.allListings, // örnek
+              onEditTap: (l) => context.push(AppRoutes.listingCreate, extra: l), // ✅
             ),
           ),
         ),
