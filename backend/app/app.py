@@ -1,13 +1,9 @@
-from sys import prefix
-import bcrypt
-from flask import Flask, Blueprint,  request
+from flask import Flask, request, session
 from flask_cors import CORS
 from app.extensions.tools import toolbar
-
-import sqlalchemy
 import pymysql
 from flask_bcrypt import Bcrypt
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user, login_fresh
+from datetime import timedelta
 
 pymysql.install_as_MySQLdb()
 #Engine için Mysql clientını oluşturur.
@@ -23,10 +19,6 @@ def create_app():
     CORS(app)
 
     bcrypt = Bcrypt(app)
-
-    login_manager = LoginManager()
-    login_manager.init_app(app)
-    
     
 
 
@@ -92,13 +84,8 @@ def create_app():
 
     from app.blueprints.user.controller import get_user_controller, add_user_controller
     from app.models.models import Kullanici
-
-    @login_manager.user_loader
-    def load_user(user_id):
-        data = {"kullanici_id": user_id}
-        user, _ = get_user_controller(data)
-        return user
     
+
 
     @app.route('/login',methods=['POST'])
     def login():
@@ -106,26 +93,45 @@ def create_app():
         sifre = data['sifre']
         
         user = get_user_controller(data)
-    
+        print(user)
+        print(user[0])
+        print(user[0]["sifre"])
         if bcrypt.check_password_hash(user[0]['sifre'], sifre):
             print("Login başarılı kaydediliyor")
+            print(user[0])
+            
+            session["user"] = user[0] # Sadece user nesnesini al.
 
             return str(user[0]['kullanici_id']),200
         else: 
             return "Şifre veya maili yanlış girdiniz", 400
 
+    @app.route('/user', methods=['GET'])
+    def user():
+        
+        if "user" in session:
+            return session["user"], 200
+        else: 
+            return "User bulunamadı", 200
+
+    @app.route('/logout')
+    def logout():
+        session.pop("user", None)
+        return "Logout başarılı",200
+
+
     @app.route('/signup',methods=['POST'])
     def signup():
         data = request.get_json()
-
         sifre = data['sifre']
-        print(data['sifre'])
+
         hashed_sifre = bcrypt.generate_password_hash(sifre)
         data['sifre'] = hashed_sifre
 
         response = add_user_controller(data)
 
         return response
+
 
 
     toolbar.init_app(app)
