@@ -24,7 +24,7 @@ def delete_favori_controller(data):
 
 def get_favori_controller(data):
     
-    statement = text(f"""SELECT * FROM favori WHERE favori.ilan_id = :ilan_id AND favori.kullanici_id = :kullanici_id;""")
+    statement = text(f"""SELECT * FROM favori WHERE favori.kullanici_id = :kullanici_id;""")
     response  = get_service(data,statement)
 
     return response

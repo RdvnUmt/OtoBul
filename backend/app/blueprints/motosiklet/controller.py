@@ -1,6 +1,6 @@
 from sqlalchemy.sql import text
 from app.blueprints.motosiklet.service import add_service,delete_service,update_service, get_service
-
+from app.utils.utils import get_method_parser
 
 def add_motosiklet_controller(data):
     
@@ -81,7 +81,9 @@ def update_motosiklet_controller(data):
 
 
 def get_motosiklet_controller(data):
-
+    query_str,data = get_method_parser(data)
+    print(query_str)
+    print(data)
     
     statement = text(f""" SELECT * FROM motosiklet 
                         INNER JOIN vasita_ilan ON vasita_ilan.vasita_id = motosiklet.vasita_id
@@ -90,7 +92,8 @@ def get_motosiklet_controller(data):
                         INNER JOIN kategori ON kategori.kategori_id = ilan.kategori_id
                         INNER JOIN model ON vasita_ilan.model_id = model.model_id
                         INNER JOIN seri ON model.seri_id = seri.seri_id
-                        INNER JOIN marka ON marka.marka_id = seri.marka_id;  """)
+                        INNER JOIN marka ON marka.marka_id = seri.marka_id
+                        {query_str}  """)
     
     statement2 = text(f""" SELECT COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS

@@ -74,8 +74,7 @@ def get_service(data,statement):
                        "soyad": result[5], 
                       "telefon_no": result[6],"kullanici_tipi": result[7], "olusturulma_tarihi": result[8],
                       "guncellenme_tarihi": result[9]}
-
-            print(result)    
+   
             con.commit()
         except sqlalchemy.exc.DataError as e:
             return f"Verilerinizi lütfen kontrol edin!",400

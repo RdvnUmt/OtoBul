@@ -1,6 +1,6 @@
 from sqlalchemy.sql import text
 from app.blueprints.konut.service import add_service,delete_service,update_service, get_service
-
+from app.utils.utils import get_method_parser
 
 def add_konut_ilan_controller(data):
     
@@ -76,13 +76,16 @@ def update_konut_ilan_controller(data):
 
 def get_konut_ilan_controller(data):
 
-    
+    query_str,data = get_method_parser(data)
+    print(query_str)
+    print(data)
     statement = text(f""" SELECT * FROM konut_ilan 
                         INNER JOIN yerleske_ilan ON yerleske_ilan.yerleske_id = konut_ilan.yerleske_id
                         INNER JOIN emlak_ilan ON emlak_ilan.emlak_id = yerleske_ilan.emlak_id
                         INNER JOIN ilan ON emlak_ilan.ilan_id = ilan.ilan_id
                         INNER JOIN adres ON ilan.adres_id = adres.adres_id
-                        INNER JOIN kategori ON kategori.kategori_id = ilan.kategori_id; 
+                        INNER JOIN kategori ON kategori.kategori_id = ilan.kategori_id
+                        {query_str}
                         """)
     
     statement2 = text(f""" SELECT COLUMN_NAME
