@@ -30,7 +30,7 @@ def update_devre_mulk():
 
 @devre_mulk_route.route("/get", methods=['GET'])
 def get_devre_mulk():
-    data = request.get_json(silent=True) or {}
+    data = request.args.to_dict()
     response = get_devre_mulk_controller(data)
 
     return response

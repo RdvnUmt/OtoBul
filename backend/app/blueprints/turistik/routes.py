@@ -30,7 +30,7 @@ def update_turistik_tesis():
 
 @turistik_tesis_route.route("/get", methods=['GET'])
 def get_turistik_tesis():
-    data = request.get_json(silent=True) or {}
+    data = request.args.to_dict()
     response = get_turistik_tesis_controller(data)
 
     return response

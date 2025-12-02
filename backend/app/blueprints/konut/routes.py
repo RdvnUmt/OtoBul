@@ -30,7 +30,7 @@ def update_konut_ilan():
 
 @konut_ilan_route.route("/get", methods=['GET'])
 def get_konut_ilan():
-    data = request.get_json(silent=True) or {}
+    data = request.args.to_dict()
     response = get_konut_ilan_controller(data)
 
     return response

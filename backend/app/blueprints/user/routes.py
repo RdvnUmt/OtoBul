@@ -32,7 +32,7 @@ def update_user():
 
 @user_route.route('/get', methods=['GET'])
 def get_user():
-    data = request.get_json()
+    data = request.args.to_dict()
     response = get_user_controller(data)
     
     return response
