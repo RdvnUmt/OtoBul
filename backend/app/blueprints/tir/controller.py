@@ -1,6 +1,7 @@
 from sqlalchemy.sql import text
 from app.blueprints.tir.service import add_service,delete_service,update_service, get_service
 from app.utils.utils import get_method_parser
+from app.policies.policies import id_control_policy
 
 def add_tir_controller(data):
     
@@ -39,6 +40,9 @@ def add_tir_controller(data):
 
 def delete_tir_controller(data):
 
+    if not (id_control_policy("tir", "tir_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
+
     statement = text(f""" DELETE ilan,kategori,adres, marka
                         FROM tir 
                         INNER JOIN vasita_ilan ON vasita_ilan.vasita_id = tir.vasita_id
@@ -57,6 +61,9 @@ def delete_tir_controller(data):
 
 
 def update_tir_controller(data):
+
+    if not (id_control_policy("tir", "tir_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
 
     resultstr = ""
     for item in(data.keys()):

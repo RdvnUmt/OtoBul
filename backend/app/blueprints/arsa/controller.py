@@ -1,6 +1,7 @@
 from sqlalchemy.sql import text
 from app.blueprints.arsa.service import add_service,delete_service,update_service, get_service
 from app.utils.utils import get_method_parser
+from app.policies.policies import id_control_policy
 
 def add_arsa_controller(data):
     
@@ -31,6 +32,9 @@ def add_arsa_controller(data):
 
 def delete_arsa_controller(data):
 
+    if not (id_control_policy("arsa", "arsa_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
+
     statement = text(f""" DELETE ilan,kategori,adres
                         FROM arsa 
                         INNER JOIN emlak_ilan ON emlak_ilan.emlak_id = arsa.emlak_id
@@ -46,6 +50,9 @@ def delete_arsa_controller(data):
 
 
 def update_arsa_controller(data):
+
+    if not (id_control_policy("arsa", "arsa_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
 
     resultstr = ""
     for item in(data.keys()):

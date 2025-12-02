@@ -54,6 +54,8 @@ def get_user_controller(data):
         query_string = "WHERE kullanici.email =:email"
     elif data.get("kullanici_id"):    
         query_string = "WHERE kullanici.kullanici_id =:kullanici_id"
+
+    print(query_string)     
     statement  =text(f"""SELECT * FROM Kullanici {query_string} ;""")
     response = get_service(data,statement)
 

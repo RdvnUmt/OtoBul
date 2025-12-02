@@ -1,6 +1,7 @@
 from sqlalchemy.sql import text
 from app.blueprints.karavan.service import add_service,delete_service,update_service, get_service
 from app.utils.utils import get_method_parser
+from app.policies.policies import id_control_policy
 
 def add_karavan_controller(data):
     
@@ -39,6 +40,9 @@ def add_karavan_controller(data):
 
 def delete_karavan_controller(data):
 
+    if not (id_control_policy("karavan", "kara_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
+
     statement = text(f""" DELETE ilan,kategori,adres, marka
                         FROM karavan 
                         INNER JOIN vasita_ilan ON vasita_ilan.vasita_id = karavan.vasita_id
@@ -57,6 +61,9 @@ def delete_karavan_controller(data):
 
 
 def update_karavan_controller(data):
+
+    if not (id_control_policy("karavan", "kara_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
 
     resultstr = ""
     for item in(data.keys()):

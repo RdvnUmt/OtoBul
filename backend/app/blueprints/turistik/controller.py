@@ -1,7 +1,7 @@
 from sqlalchemy.sql import text
 from app.blueprints.turistik.service import add_service,delete_service,update_service, get_service
 from app.utils.utils import get_method_parser
-
+from app.policies.policies import id_control_policy
 
 
 def add_turistik_tesis_controller(data):
@@ -39,6 +39,9 @@ def add_turistik_tesis_controller(data):
 
 def delete_turistik_tesis_controller(data):
 
+    if not (id_control_policy("turistik_tesis", "turistik_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
+
     statement = text(f""" DELETE ilan,kategori,adres
                         FROM turistik_tesis 
                         INNER JOIN yerleske_ilan ON yerleske_ilan.yerleske_id = turistik_tesis.yerleske_id
@@ -55,6 +58,9 @@ def delete_turistik_tesis_controller(data):
 
 
 def update_turistik_tesis_controller(data):
+
+    if not (id_control_policy("turistik_tesis", "turistik_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
 
     resultstr = ""
     for item in(data.keys()):

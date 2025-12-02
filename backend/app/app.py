@@ -91,11 +91,14 @@ def create_app():
     def login():
         data = request.get_json()
         sifre = data['sifre']
+
+        print(sifre)
         
         user = get_user_controller(data)
         print(user)
+        print("User ele geçirildi mi ne oldu!")
         print(user[0])
-        print(user[0]["sifre"])
+        # print(user[0]["sifre"])
         if bcrypt.check_password_hash(user[0]['sifre'], sifre):
             print("Login başarılı kaydediliyor")
             print(user[0])
