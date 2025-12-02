@@ -1,9 +1,23 @@
 import sqlalchemy
 
-DATABASE_URL = "mysql://root:123456@localhost/bil372proje"
+DATABASE_URL = "mysql://root:123456@localhost:3306/bil372proje"
 engine = sqlalchemy.create_engine(
     DATABASE_URL,
 )
+
+def dynamic_insert_parser(data):
+    
+    resultstr = "("
+    for item in(data.keys()):
+        resultstr =  resultstr  + f" {item},"
+    resultstr = resultstr[:len(resultstr)-1]
+    resultstr = resultstr + ") VALUES ("
+    for item in(data.keys()):
+        resultstr =  resultstr  + f" :{item},"
+    resultstr = resultstr[:len(resultstr)-1]
+    resultstr = resultstr + ");"
+
+    return resultstr, data
 
 def get_method_parser(data):
     filter_str = ""

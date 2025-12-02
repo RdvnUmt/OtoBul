@@ -30,7 +30,7 @@ def update_otomobil():
 
 @otomobil_route.route("/get", methods=['GET'])
 def get_otomobil():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     response = get_otomobil_controller(data)
 
     return response

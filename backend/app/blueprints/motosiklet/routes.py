@@ -30,7 +30,7 @@ def update_motosiklet():
 
 @motosiklet_route.route("/get", methods=['GET'])
 def get_motosiklet():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     response = get_motosiklet_controller(data)
 
     return response
