@@ -1,12 +1,22 @@
 from sqlalchemy.sql import text
 from app.blueprints.adress.service import add_service, delete_service, update_service,get_service
-
+from app.utils.utils import dynamic_insert_parser
 
 
 
 def add_address_controller(data):
-    statement = text(f"""INSERT INTO adres (ulke,sehir,ilce,mahalle,cadde,sokak,bina_no,daire_no, posta_kodu ,olusturulma_tarihi ,guncellenme_tarihi)
-                    VALUES (:ulke,:sehir,:ilce,:mahalle,:cadde,:sokak,:bina_no,:daire_no,:posta_kodu,:olusturulma_tarihi,:guncellenme_tarihi );""")
+
+
+    sql, data =  dynamic_insert_parser(data)
+    print(sql)
+    print(data)
+
+    statement = text(f"""INSERT INTO adres {sql}""")
+
+    # (ulke,sehir,ilce,mahalle,cadde,sokak,bina_no,daire_no, posta_kodu ,olusturulma_tarihi ,guncellenme_tarihi)
+    #                VALUES (:ulke,:sehir,:ilce,:mahalle,:cadde,:sokak,:bina_no,:daire_no,:posta_kodu,:olusturulma_tarihi,:guncellenme_tarihi );
+    
+
 
     response  = add_service(data,statement)
 
