@@ -24,7 +24,7 @@ def add_arsa_controller(data):
 
     statement_list = [statement1,statement2,statement3,statement4,statement5]
 
-    # try-catch ortak olmalı try-catch one data handler
+    # try-catch ortak olmalı try-catch one data handler: 
     response  = add_service(data,statement_list)
 
     return response
