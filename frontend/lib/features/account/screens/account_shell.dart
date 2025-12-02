@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/app_router.dart';
+import '../../../core/services/auth_service.dart';
 import '../widgets/sidebar.dart';
 
 ProfileSection sectionFromLocation(String path) {
@@ -92,8 +93,11 @@ class AccountShell extends StatelessWidget {
                 isDrawer: true,
                 selected: selected,
                 onSelected: onSelect,
-                onLogout: () {
-                  // logout
+                onLogout: () async {
+                  await AuthService().logout();
+                  if (context.mounted) {
+                    context.go(AppRoutes.home);
+                  }
                 },
               ),
             ),
@@ -105,8 +109,11 @@ class AccountShell extends StatelessWidget {
               child: SidebarAccount(
                 selected: selected,
                 onSelected: onSelect,
-                onLogout: () {
-                  // logout
+                onLogout: () async {
+                  await AuthService().logout();
+                  if (context.mounted) {
+                    context.go(AppRoutes.home);
+                  }
                 },
               ),
             ),

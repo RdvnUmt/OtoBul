@@ -66,8 +66,16 @@ class AuthService {
 
   // Mevcut oturum açmış kullanıcı
   User? _currentUser;
+  final ValueNotifier<User?> _userNotifier = ValueNotifier<User?>(null);
+
   User? get currentUser => _currentUser;
+  ValueListenable<User?> get userListenable => _userNotifier;
   bool get isLoggedIn => _currentUser != null;
+
+  void _setCurrentUser(User? user) {
+    _currentUser = user;
+    _userNotifier.value = user;
+  }
 
   /// Giriş yap
   Future<AuthResponse> login(String email, String sifre) async {
@@ -89,14 +97,14 @@ class AuthService {
         final userId = int.tryParse(response.body);
         
         if (userId != null) {
-          // Kullanıcı bilgilerini al
-          await _fetchCurrentUser();
-          
+          // Kullanıcı bilgilerini doğrudan ID ile al (session'a bağlı değil)
+          final user = await fetchUserById(userId);
+
           return AuthResponse(
             success: true,
             message: 'Giriş başarılı',
             userId: userId,
-            user: _currentUser,
+            user: user,
           );
         }
       }
@@ -171,12 +179,36 @@ class AuthService {
     try {
       final uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.logout}');
       await http.get(uri, headers: _headers);
-      _currentUser = null;
+      _setCurrentUser(null);
       debugPrint('👋 Logout başarılı');
     } catch (e) {
       debugPrint('❌ Logout Hatası: $e');
-      _currentUser = null;
+      _setCurrentUser(null);
     }
+  }
+
+  /// Belirli bir ID'ye göre kullanıcı bilgilerini getir (/user/get)
+  Future<User?> fetchUserById(int userId) async {
+    try {
+      final uri = Uri.parse(
+        '${ApiConfig.baseUrl}${ApiConfig.userGet}?kullanici_id=$userId',
+      );
+
+      final response = await http.get(uri, headers: _headers);
+      debugPrint('👤 FetchUserById Response: \'${response.statusCode}\' - ${response.body}');
+
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        final data = jsonDecode(response.body);
+        if (data is Map<String, dynamic>) {
+          final user = User.fromJson(data);
+          _setCurrentUser(user);
+          return user;
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ FetchUserById Hatası: $e');
+    }
+    return null;
   }
 
   /// Mevcut kullanıcı bilgilerini getir
@@ -188,8 +220,9 @@ class AuthService {
       if (response.statusCode == 200 && response.body != 'User bulunamadı') {
         final data = jsonDecode(response.body);
         if (data is Map<String, dynamic>) {
-          _currentUser = User.fromJson(data);
-          return _currentUser;
+          final user = User.fromJson(data);
+          _setCurrentUser(user);
+          return user;
         }
       }
     } catch (e) {
@@ -200,12 +233,12 @@ class AuthService {
 
   /// Kullanıcıyı local olarak set et (login sonrası)
   void setUser(User user) {
-    _currentUser = user;
+    _setCurrentUser(user);
   }
 
   /// Kullanıcıyı temizle
   void clearUser() {
-    _currentUser = null;
+    _setCurrentUser(null);
   }
 }
 

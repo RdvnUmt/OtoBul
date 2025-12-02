@@ -3,6 +3,7 @@ import 'app/app_router.dart';
 import 'shared/app_header.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'core/services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,22 +21,42 @@ class OtoBulApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routerConfig: appRouter,
       builder: (context, child) {
-        return Column(
-          children: [
-            SafeArea(
-              bottom: false,
-              child: AppHeader(
-                onLogoTap: () => appRouter.go(AppRoutes.home),
-                onLoginTap: () => appRouter.go(AppRoutes.login),
-                onRegisterTap: () => appRouter.go(AppRoutes.register),
-                onProfileTap: () => appRouter.go(AppRoutes.profile),
-                onPostAdTap: () => appRouter.go(AppRoutes.listingCreate),
-              ),
-            ),
-            Expanded(
-              child: child ?? const SizedBox.shrink(),
-            ),
-          ],
+        final auth = AuthService();
+
+        return ValueListenableBuilder<User?>(
+          valueListenable: auth.userListenable,
+          builder: (context, user, _) {
+            final isLoggedIn = user != null;
+
+            return Column(
+              children: [
+                SafeArea(
+                  bottom: false,
+                  child: AppHeader(
+                    onLogoTap: () => appRouter.go(AppRoutes.home),
+                    onLoginTap:
+                        isLoggedIn ? null : () => appRouter.go(AppRoutes.login),
+                    onRegisterTap: isLoggedIn
+                        ? null
+                        : () => appRouter.go(AppRoutes.register),
+                    onProfileTap: isLoggedIn
+                        ? () => appRouter.go(AppRoutes.profile)
+                        : null,
+                    onPostAdTap: isLoggedIn
+                        ? () => appRouter.go(AppRoutes.listingCreate)
+                        : null,
+                    showLogin: !isLoggedIn,
+                    showRegister: !isLoggedIn,
+                    showProfile: isLoggedIn,
+                    showPostAd: isLoggedIn,
+                  ),
+                ),
+                Expanded(
+                  child: child ?? const SizedBox.shrink(),
+                ),
+              ],
+            );
+          },
         );
       },
     );
