@@ -5,7 +5,7 @@
 
 #Gets user and data and controls if ids are the same
 from flask import session
-from numpy import where
+
 
 
 def id_control_policy(func_name,where_id, data):
