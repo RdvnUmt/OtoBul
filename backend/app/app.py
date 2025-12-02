@@ -15,7 +15,7 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = ''
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'thisisasecretkey'
-
+    app.permanent_session_lifetime = timedelta(days=14)
     CORS(app)
 
     bcrypt = Bcrypt(app)
@@ -100,6 +100,7 @@ def create_app():
             print("Login başarılı kaydediliyor")
             print(user[0])
             
+            session.permanent = True
             session["user"] = user[0] # Sadece user nesnesini al.
 
             return str(user[0]['kullanici_id']),200
