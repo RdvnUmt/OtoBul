@@ -5,6 +5,20 @@ engine = sqlalchemy.create_engine(
     DATABASE_URL,
 )
 
+def dynamic_insert_parser(data):
+    
+    resultstr = "("
+    for item in(data.keys()):
+        resultstr =  resultstr  + f" {item},"
+    resultstr = resultstr[:len(resultstr)-1]
+    resultstr = resultstr + ") VALUES ("
+    for item in(data.keys()):
+        resultstr =  resultstr  + f" :{item},"
+    resultstr = resultstr[:len(resultstr)-1]
+    resultstr = resultstr + ");"
+
+    return resultstr, data
+
 def get_method_parser(data):
     filter_str = ""
 
