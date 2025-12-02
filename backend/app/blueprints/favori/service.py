@@ -47,10 +47,11 @@ def get_service(data,statement):
     with engine.connect() as con:
 
         try: 
+            resultObj = []
             for row in con.execute(statement,data):
                 result = row
-
-            result = {"kullanici_id": result[1],"ilan_id": result[0], "olusturulma_tarihi": result[2]}    
+                result = {"kullanici_id": result[1],"ilan_id": result[0], "olusturulma_tarihi": result[2]}
+                resultObj.append(result)  
             con.commit()
         except sqlalchemy.exc.DataError as e:
             return f"Verilerinizi lütfen kontrol edin!",400
@@ -61,5 +62,5 @@ def get_service(data,statement):
         except Exception as e :
             return f"{e}",520
         
-    return result,200  
+    return resultObj,200  
     

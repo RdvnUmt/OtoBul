@@ -119,12 +119,11 @@ def get_service(data,statement_list):
         try: 
             for row in con.execute(statement_list[0],data):
                 result.append(row)
-            print(f"RESULT  : {result}")   
-            print(f"RESULT LEN : {len(result)}")  
+           
 
             for row in con.execute(statement_list[1],data):
                 result2.append(row[0])
-            print(f"RESULT2  : {result2}")  
+      
 
             resultobj= []
             result_iter = {}
@@ -134,7 +133,7 @@ def get_service(data,statement_list):
                     result_iter[f'{result2[i]}'] = result[j][i] 
                 resultobj.append(result_iter)
                 
-            print(f"RESULTOBJ  :{resultobj}")
+       
 
             con.commit()
         except sqlalchemy.exc.DataError as e:

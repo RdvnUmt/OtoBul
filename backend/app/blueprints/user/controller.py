@@ -40,7 +40,7 @@ def update_user_controller(data):
 
 def get_user_controller(data):
 
-    statement  =text(f"""SELECT * FROM Kullanici WHERE kullanici.kullanici_id =:kullanici_id ;""")
+    statement  =text(f"""SELECT * FROM Kullanici WHERE kullanici.email =:email ;""")
     response = get_service(data,statement)
 
 
