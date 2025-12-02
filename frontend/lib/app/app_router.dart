@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:my_flutter_app/core/data/mock_listings.dart';
 import 'package:my_flutter_app/core/models/listing_model.dart';
+import '../core/services/auth_service.dart';
 
 import '../features/account/screens/account_shell.dart';
 
@@ -100,14 +101,19 @@ final GoRouter appRouter = GoRouter(
       routes: [
         GoRoute(
           path: AppRoutes.profile,
-          pageBuilder: (context, state) => NoTransitionPage(
-            child: ProfilePage(
-              initialFirstName: "Taha",
-              initialLastName: "Tavlan",
-              phone: "+90 545 958 90 74",
-              email: "ttavlan@email.com",
-            ),
-          ),
+          pageBuilder: (context, state) {
+            final auth = AuthService();
+            final user = auth.currentUser;
+
+            return NoTransitionPage(
+              child: ProfilePage(
+                initialFirstName: user?.ad ?? '',
+                initialLastName: user?.soyad ?? '',
+                phone: user?.telefonNo ?? '',
+                email: user?.email ?? '',
+              ),
+            );
+          },
         ),
         GoRoute(
           path: AppRoutes.listings,

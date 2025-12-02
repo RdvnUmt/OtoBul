@@ -5,6 +5,12 @@ class ApiConfig {
   // Web için localhost, mobil emülatör için 10.0.2.2 kullan
   static const String baseUrl = 'http://127.0.0.1:8080';
   
+  // Auth endpoints
+  static const String login = '/login';
+  static const String signup = '/signup';
+  static const String logout = '/logout';
+  static const String currentUser = '/user';
+
   // User endpoints
   static const String userAdd = '/user/add';
   static const String userGet = '/user/get';

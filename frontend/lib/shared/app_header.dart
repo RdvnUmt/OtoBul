@@ -8,6 +8,10 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onRegisterTap;
   final VoidCallback? onProfileTap;
   final VoidCallback? onPostAdTap;
+  final bool showLogin;
+  final bool showRegister;
+  final bool showProfile;
+  final bool showPostAd;
 
   const AppHeader({
     super.key,
@@ -16,6 +20,10 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     this.onRegisterTap,
     this.onProfileTap,
     this.onPostAdTap,
+    this.showLogin = true,
+    this.showRegister = true,
+    this.showProfile = true,
+    this.showPostAd = true,
   });
 
   @override
@@ -114,17 +122,32 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _buildButtons() {
+    final buttons = <Widget>[];
+
+    if (showLogin) {
+      buttons.add(_LoginButton(onTap: onLoginTap));
+      buttons.add(const SizedBox(width: 12));
+    }
+
+    if (showRegister) {
+      buttons.add(_RegisterButton(onTap: onRegisterTap));
+      buttons.add(const SizedBox(width: 12));
+    }
+
+    if (showProfile) {
+      buttons.add(_ProfileButton(onTap: onProfileTap));
+      buttons.add(const SizedBox(width: 12));
+    }
+
+    if (showPostAd) {
+      buttons.add(_PostAdButton(onTap: onPostAdTap));
+    } else if (buttons.isNotEmpty) {
+      buttons.removeLast();
+    }
+
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        _LoginButton(onTap: onLoginTap),
-        const SizedBox(width: 12),
-        _RegisterButton(onTap: onRegisterTap),
-        const SizedBox(width: 12),
-        _ProfileButton(onTap: onProfileTap),
-        const SizedBox(width: 12),
-        _PostAdButton(onTap: onPostAdTap),
-      ],
+      children: buttons,
     );
   }
 }

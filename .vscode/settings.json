@@ -1,3 +1,5 @@
 {
-    "cmake.sourceDirectory": "E:/Web Development/Flutter/OtoBul/frontend/linux/runner"
+    "cmake.sourceDirectory": "E:/Web Development/Flutter/OtoBul/frontend/linux/runner",
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": []
 }
