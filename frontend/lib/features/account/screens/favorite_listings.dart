@@ -5,7 +5,124 @@ import 'package:go_router/go_router.dart';
 
 import '/core/theme/colors.dart';
 import '/core/models/listing_model.dart';
+import '/core/services/auth_service.dart';
+import '/core/services/favorite_service.dart';
 import '/shared/widgets/listing_card.dart';
+
+/// Gerçek favori sayfası - backend'den favorileri çeker
+class FavoriteListingsScreen extends StatefulWidget {
+  const FavoriteListingsScreen({super.key});
+
+  @override
+  State<FavoriteListingsScreen> createState() => _FavoriteListingsScreenState();
+}
+
+class _FavoriteListingsScreenState extends State<FavoriteListingsScreen> {
+  final FavoriteService _favoriteService = FavoriteService();
+  final AuthService _authService = AuthService();
+
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<Listing> _favorites = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    final user = _authService.currentUser;
+    if (user == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Favorileri görmek için lütfen giriş yapın.';
+      });
+      return;
+    }
+
+    try {
+      final favorites = await _favoriteService.getFavoriteListingsForUser(user.kullaniciId);
+      setState(() {
+        _favorites = favorites;
+        _isLoading = false;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Favoriler yüklenirken bir hata oluştu.';
+      });
+    }
+  }
+
+  Future<void> _toggleFavorite(Listing listing) async {
+    final user = _authService.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Favorilere eklemek için lütfen giriş yapın.')),
+      );
+      return;
+    }
+
+    final ilanId = int.tryParse(listing.id) ?? 0;
+    if (ilanId == 0) return;
+
+    final isAlreadyFavorite = _favorites.any((l) => l.id == listing.id);
+    bool ok;
+
+    if (isAlreadyFavorite) {
+      ok = await _favoriteService.removeFavorite(
+        ilanId: ilanId,
+        kullaniciId: user.kullaniciId,
+      );
+    } else {
+      ok = await _favoriteService.addFavorite(
+        ilanId: ilanId,
+        kullaniciId: user.kullaniciId,
+      );
+    }
+
+    if (!mounted) return;
+
+    if (ok) {
+      await _loadFavorites();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Favori işlemi başarısız oldu.'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            _errorMessage!,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return FavoriteListingsPage(
+      favorites: _favorites,
+      onFavoriteTap: _toggleFavorite,
+    );
+  }
+}
 
 class FavoriteListingsPage extends StatelessWidget {
   final List<Listing> favorites;
@@ -113,7 +230,10 @@ class FavoriteListingsPage extends StatelessWidget {
 
                       final onTap = onListingTap != null
                           ? () => onListingTap!(listing)
-                          : () => context.go('/ilan-detay/${listing.id}');
+                          : () => context.go(
+                                '/ilan-detay/${listing.id}',
+                                extra: listing,
+                              );
 
                       return ListingCard(
                         listing: listing,

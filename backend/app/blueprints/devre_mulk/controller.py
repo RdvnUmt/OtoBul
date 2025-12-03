@@ -1,6 +1,7 @@
 from sqlalchemy.sql import text
 from app.blueprints.devre_mulk.service import add_service,delete_service,update_service, get_service
 from app.utils.utils import get_method_parser
+from app.policies.policies import id_control_policy
 
 def add_devre_mulk_controller(data):
     
@@ -35,6 +36,9 @@ def add_devre_mulk_controller(data):
 
 def delete_devre_mulk_controller(data):
 
+    if not (id_control_policy("devre_mulk", "devre_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
+
     statement = text(f""" DELETE ilan,kategori,adres
                         FROM devre_mulk 
                         INNER JOIN yerleske_ilan ON yerleske_ilan.yerleske_id = devre_mulk.yerleske_id
@@ -51,6 +55,9 @@ def delete_devre_mulk_controller(data):
 
 
 def update_devre_mulk_controller(data):
+
+    if not (id_control_policy("devre_mulk", "devre_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
 
     resultstr = ""
     for item in(data.keys()):

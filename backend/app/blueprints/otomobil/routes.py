@@ -28,9 +28,12 @@ def update_otomobil():
 
     return response
 
-@otomobil_route.route("/get", methods=['GET'])
+@otomobil_route.route("/get", methods=['GET','POST'])
 def get_otomobil():
-    data = request.get_json(silent=True) or {}
+    if request.method == 'POST':
+        data = request.get_json() or {}
+    else:
+        data = request.args.to_dict()
     response = get_otomobil_controller(data)
 
     return response

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/auth_service.dart';
+import '../../../core/services/address_service.dart';
+import '../../../core/models/address_model.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({
@@ -7,20 +10,12 @@ class ProfilePage extends StatefulWidget {
     this.initialLastName = '',
     this.phone = '',
     this.email = '',
-    this.initialCountryCode = 'TR',
-    this.initialCity = '',
-    this.initialDistrict = '',
   });
 
   final String initialFirstName;
   final String initialLastName;
-
   final String phone;
   final String email;
-
-  final String initialCountryCode;
-  final String initialCity;
-  final String initialDistrict;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -35,86 +30,241 @@ class _ProfilePageState extends State<ProfilePage> {
 
   late final TextEditingController _firstNameC;
   late final TextEditingController _lastNameC;
+  late final TextEditingController _ulkeC;
+  late final TextEditingController _sehirC;
+  late final TextEditingController _ilceC;
 
-  late final TextEditingController _cityC;
-  late final TextEditingController _districtC;
+  // Initial değerler
+  String _initialFirstName = '';
+  String _initialLastName = '';
+  String _initialUlke = '';
+  String _initialSehir = '';
+  String _initialIlce = '';
 
-  late String _countryCode;
+  Address? _currentAddress;
+  bool _isLoading = true;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
     _firstNameC = TextEditingController(text: widget.initialFirstName);
     _lastNameC = TextEditingController(text: widget.initialLastName);
+    _ulkeC = TextEditingController();
+    _sehirC = TextEditingController();
+    _ilceC = TextEditingController();
 
-    _countryCode = widget.initialCountryCode;
-    _cityC = TextEditingController(text: widget.initialCity);
-    _districtC = TextEditingController(text: widget.initialDistrict);
+    _initialFirstName = widget.initialFirstName;
+    _initialLastName = widget.initialLastName;
+
+    _loadAddressData();
   }
 
   @override
   void dispose() {
     _firstNameC.dispose();
     _lastNameC.dispose();
-    _cityC.dispose();
-    _districtC.dispose();
+    _ulkeC.dispose();
+    _sehirC.dispose();
+    _ilceC.dispose();
     super.dispose();
   }
 
-  // AYARLARA YÖNLENDİRİLECEKLER
-  void editPhone() {
-    // TODO: modal aç / dialog / route vs.
-    debugPrint('editPhone clicked');
+  /// Kullanıcının adres bilgilerini yükle
+  Future<void> _loadAddressData() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final user = AuthService().currentUser;
+      if (user?.adresId != null) {
+        final address = await AddressService().getAddressById(user!.adresId!);
+        if (address != null) {
+          _currentAddress = address;
+          _ulkeC.text = address.ulke ?? '';
+          _sehirC.text = address.sehir ?? '';
+          _ilceC.text = address.ilce ?? '';
+
+          _initialUlke = address.ulke ?? '';
+          _initialSehir = address.sehir ?? '';
+          _initialIlce = address.ilce ?? '';
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Adres yükleme hatası: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
-  void editEmail() {
-    // TODO: modal aç / dialog / route vs.
-    debugPrint('editEmail clicked');
-  }
-
-  void saveChanges() { // API
+  /// Değişiklikleri kaydet
+  Future<void> saveChanges() async {
     FocusScope.of(context).unfocus();
 
-    final payload = <String, dynamic>{
-      'firstName': _firstNameC.text.trim(),
-      'lastName': _lastNameC.text.trim(),
-      'countryCode': _countryCode,
-      'city': _cityC.text.trim(),
-      'district': _districtC.text.trim(),
-    };
+    if (!_hasAnyEdits) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Değişiklik yapılmadı')),
+      );
+      return;
+    }
 
-    debugPrint('SAVE payload: $payload');
+    setState(() => _isSaving = true);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Değişiklikler kaydedildi.')),
-    );
+    try {
+      final user = AuthService().currentUser;
+      if (user == null) {
+        throw Exception('Kullanıcı bulunamadı');
+      }
 
-    // TODO: buradan API çağrısı/DB güncellemesi bağlayacaksın.
+      // 1. Ad ve Soyad güncelleme
+      final nameChanged = _firstNameC.text.trim() != _initialFirstName ||
+          _lastNameC.text.trim() != _initialLastName;
+
+      if (nameChanged) {
+        final success = await AuthService().updateUserFields({
+          'ad': _firstNameC.text.trim(),
+          'soyad': _lastNameC.text.trim(),
+        });
+
+        if (!success) {
+          throw Exception('Kullanıcı bilgileri güncellenemedi');
+        }
+      }
+
+      // 2. Adres işlemleri
+      final addressChanged = _ulkeC.text.trim() != _initialUlke ||
+          _sehirC.text.trim() != _initialSehir ||
+          _ilceC.text.trim() != _initialIlce;
+
+      if (addressChanged) {
+        final hasAddressData = _ulkeC.text.trim().isNotEmpty ||
+            _sehirC.text.trim().isNotEmpty ||
+            _ilceC.text.trim().isNotEmpty;
+
+        if (hasAddressData) {
+          int? newAddressId;
+
+          if (_currentAddress == null || user.adresId == null) {
+            // Yeni adres ekle
+            final newAddress = Address(
+              ulke: _ulkeC.text.trim().isNotEmpty ? _ulkeC.text.trim() : null,
+              sehir: _sehirC.text.trim().isNotEmpty ? _sehirC.text.trim() : null,
+              ilce: _ilceC.text.trim().isNotEmpty ? _ilceC.text.trim() : null,
+            );
+
+            newAddressId = await AddressService().addAddress(newAddress);
+
+            if (newAddressId == null) {
+              throw Exception('Adres eklenemedi');
+            }
+
+            debugPrint('✅ Yeni adres eklendi: $newAddressId');
+          } else {
+            // Mevcut adresi güncelle
+            final updatedAddress = Address(
+              adresId: _currentAddress!.adresId, // ✅ Önemli: adres_id'yi koru
+              ulke: _ulkeC.text.trim().isNotEmpty ? _ulkeC.text.trim() : null,
+              sehir: _sehirC.text.trim().isNotEmpty ? _sehirC.text.trim() : null,
+              ilce: _ilceC.text.trim().isNotEmpty ? _ilceC.text.trim() : null,
+              // Diğer alanları mevcut değerlerden al
+              mahalle: _currentAddress!.mahalle,
+              cadde: _currentAddress!.cadde,
+              sokak: _currentAddress!.sokak,
+              binaNo: _currentAddress!.binaNo,
+              daireNo: _currentAddress!.daireNo,
+              postaKodu: _currentAddress!.postaKodu,
+            );
+
+            final success = await AddressService().updateAddress(updatedAddress);
+
+            if (!success) {
+              throw Exception('Adres güncellenemedi');
+            }
+
+            debugPrint('✅ Adres güncellendi: ${_currentAddress!.adresId}');
+          }
+
+          // 3. Kullanıcının adres_id'sini güncelle (eğer yeni adres eklendiyse)
+          if (newAddressId != null && user.adresId != newAddressId) {
+            final success = await AuthService().updateUserFields({
+              'adres_id': newAddressId,
+            });
+
+            if (!success) {
+              throw Exception('Kullanıcı adres ID\'si güncellenemedi');
+            }
+
+            debugPrint('✅ Kullanıcının adres_id\'si güncellendi: $newAddressId');
+          }
+        }
+      }
+
+      // Başarılı, initial değerleri güncelle
+      _initialFirstName = _firstNameC.text.trim();
+      _initialLastName = _lastNameC.text.trim();
+      _initialUlke = _ulkeC.text.trim();
+      _initialSehir = _sehirC.text.trim();
+      _initialIlce = _ilceC.text.trim();
+
+      // Adresi yeniden yükle
+      await _loadAddressData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Değişiklikler başarıyla kaydedildi'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Kaydetme hatası: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Hata: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
-  void revertChanges() {  // API
+  /// Değişiklikleri geri al
+  void revertChanges() {
     FocusScope.of(context).unfocus();
 
     setState(() {
-      _firstNameC.text = widget.initialFirstName;
-      _lastNameC.text = widget.initialLastName;
-
-      _countryCode = widget.initialCountryCode;
-      _cityC.text = widget.initialCity;
-      _districtC.text = widget.initialDistrict;
+      _firstNameC.text = _initialFirstName;
+      _lastNameC.text = _initialLastName;
+      _ulkeC.text = _initialUlke;
+      _sehirC.text = _initialSehir;
+      _ilceC.text = _initialIlce;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Değişiklikler geri alındı.')),
+      const SnackBar(content: Text('Değişiklikler geri alındı')),
     );
   }
 
   bool get _hasAnyEdits {
-    return _firstNameC.text.trim() != widget.initialFirstName.trim() ||
-        _lastNameC.text.trim() != widget.initialLastName.trim() ||
-        _countryCode != widget.initialCountryCode ||
-        _cityC.text.trim() != widget.initialCity.trim() ||
-        _districtC.text.trim() != widget.initialDistrict.trim();
+    return _firstNameC.text.trim() != _initialFirstName ||
+        _lastNameC.text.trim() != _initialLastName ||
+        _ulkeC.text.trim() != _initialUlke ||
+        _sehirC.text.trim() != _initialSehir ||
+        _ilceC.text.trim() != _initialIlce;
+  }
+
+  // AYARLARA YÖNLENDİRİLECEKLER
+  void editPhone() {
+    debugPrint('editPhone clicked - Settings sayfasına yönlendir');
+  }
+
+  void editEmail() {
+    debugPrint('editEmail clicked - Settings sayfasına yönlendir');
   }
 
   String get _initials {
@@ -158,7 +308,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Shell zaten Scaffold + scroll sağlıyor; burada sadece içerik var.
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Container(
       color: Colors.white,
       child: _FixedWidth(
@@ -264,18 +422,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     _SectionTitle(title: 'Adres Bilgileri', color: _ink),
                     const SizedBox(height: 12),
 
-                    DropdownButtonFormField<String>(
-                      value: _countryCode,
-                      decoration: _dec(label: 'Ülke'),
-                      items: const [
-                        DropdownMenuItem(value: 'TR', child: Text('(TR) Türkiye')),
-                        DropdownMenuItem(value: 'DE', child: Text('(DE) Almanya')),
-                        DropdownMenuItem(value: 'NL', child: Text('(NL) Hollanda')),
-                        DropdownMenuItem(value: 'FR', child: Text('(FR) Fransa')),
-                        DropdownMenuItem(value: 'GB', child: Text('(GB) Birleşik Krallık')),
-                        DropdownMenuItem(value: 'US', child: Text('(US) Amerika Birleşik Devletleri')),
-                      ],
-                      onChanged: (v) => setState(() => _countryCode = v ?? 'TR'),
+                    TextField(
+                      controller: _ulkeC,
+                      onChanged: (_) => setState(() {}),
+                      decoration: _dec(label: 'Ülke', hint: 'Türkiye'),
+                      textInputAction: TextInputAction.next,
                     ),
 
                     const SizedBox(height: 12),
@@ -283,19 +434,19 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         Expanded(
                           child: TextField(
-                            controller: _cityC,
+                            controller: _sehirC,
                             onChanged: (_) => setState(() {}),
-                            decoration: _dec(label: 'İl'),
+                            decoration: _dec(label: 'İl', hint: 'İstanbul'),
                             textInputAction: TextInputAction.next,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: TextField(
-                            controller: _districtC,
+                            controller: _ilceC,
                             onChanged: (_) => setState(() {}),
-                            decoration: _dec(label: 'İlçe'),
-                            textInputAction: TextInputAction.next,
+                            decoration: _dec(label: 'İlçe', hint: 'Kadıköy'),
+                            textInputAction: TextInputAction.done,
                           ),
                         ),
                       ],
@@ -314,7 +465,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   alignment: WrapAlignment.end,
                   children: [
                     OutlinedButton.icon(
-                      onPressed: _hasAnyEdits ? revertChanges : null,
+                      onPressed: (_hasAnyEdits && !_isSaving) ? revertChanges : null,
                       icon: const Icon(Icons.undo),
                       label: const Text('Değişiklikleri Geri Al'),
                       style: OutlinedButton.styleFrom(
@@ -325,9 +476,18 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     FilledButton.icon(
-                      onPressed: _hasAnyEdits ? saveChanges : null,
-                      icon: const Icon(Icons.check),
-                      label: const Text('Değişiklikleri Kaydet'),
+                      onPressed: (_hasAnyEdits && !_isSaving) ? saveChanges : null,
+                      icon: _isSaving 
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.check),
+                      label: Text(_isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'),
                       style: FilledButton.styleFrom(
                         backgroundColor: _primary,
                         foregroundColor: Colors.white,

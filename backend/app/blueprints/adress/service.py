@@ -1,6 +1,7 @@
 import sqlalchemy.exc
 from app.utils.utils import engine 
 import sqlalchemy
+from sqlalchemy.sql import text
 
 def add_service(data,statement):
     with engine.connect() as con:
@@ -8,6 +9,10 @@ def add_service(data,statement):
         try: 
             con.execute(statement, data)
             con.commit()
+            smt = text(f"""SELECT last_insert_id() AS id""")
+            for row in con.execute(smt):
+                address_id = row
+
         except sqlalchemy.exc.DataError as e:
             return f"Verilerinizi lütfen kontrol edin!",400
         except sqlalchemy.exc.IntegrityError  as e:
@@ -17,22 +22,30 @@ def add_service(data,statement):
         except Exception as e :
             return f"{e}",520
         
-    return "Adres başarıyla oluşturuldu",200   
+    return str(address_id[0]),200   
 
 
 def delete_service(data,statement):
+    print(f"🔥 delete_service - data: {data}")
+    print(f"🔥 delete_service - statement: {statement}")
+    
     with engine.connect() as con:
 
         try: 
-            con.execute(statement, data)
+            result = con.execute(statement, data)
+            print(f"🔥 delete_service - SQL başarılı, affected rows: {result.rowcount}")
             con.commit()
         except sqlalchemy.exc.DataError as e:
+            print(f"❌ DataError: {e}")
             return f"Verilerinizi lütfen kontrol edin!",400
         except sqlalchemy.exc.IntegrityError  as e:
+            print(f"❌ IntegrityError: {e}")
             return  "Data integration hatası!",400
         except sqlalchemy.exc.InvalidRequestError as e:
+            print(f"❌ InvalidRequestError: {e}")
             return "Gönderilen verilede eksiklik var lütfen ekleyiniz!",400
         except Exception as e :
+            print(f"❌ Exception: {type(e).__name__} - {e}")
             return f"{e}",520
         
     return "Adres başarıyla silindi",200   

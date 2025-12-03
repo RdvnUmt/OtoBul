@@ -137,10 +137,13 @@ def get_service(data,statement_list):
 
             con.commit()
         except sqlalchemy.exc.DataError as e:
+            print(e)
             return f"Verilerinizi lütfen kontrol edin!",400
         except sqlalchemy.exc.IntegrityError  as e:
+            print(e)
             return  "Data entegrasyon hatası!",400
         except sqlalchemy.exc.InvalidRequestError as e:
+            print(e)
             return "Gönderilen verilede eksiklik var (kullanıcı_id) lütfen ekleyiniz!",400
         except Exception as e :
             print(e)

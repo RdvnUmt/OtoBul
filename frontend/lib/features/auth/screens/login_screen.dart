@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/core/theme/colors.dart';
 import '/app/app_router.dart';
+import '/core/services/auth_service.dart';
 import '../widgets/auth_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,13 +16,55 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
+  
   bool _passwordVisible = false;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    // Validasyon
+    if (_emailController.text.trim().isEmpty) {
+      setState(() => _errorMessage = 'E-posta adresi gerekli');
+      return;
+    }
+    if (_passwordController.text.isEmpty) {
+      setState(() => _errorMessage = 'Şifre gerekli');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final response = await _authService.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (response.success) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hoş geldiniz! ${response.user?.fullName ?? ''}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.go(AppRoutes.home);
+      }
+    } else {
+      setState(() => _errorMessage = response.message);
+    }
   }
 
   @override
@@ -39,6 +82,34 @@ class _LoginScreenState extends State<LoginScreen> {
                 title: 'Giriş Yap'
               ),
               const SizedBox(height: 32),
+
+              // Error Message
+              if (_errorMessage != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
 
               // Email
               AuthTextField(
@@ -71,8 +142,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Login Button
               AuthPrimaryButton(
-                text: 'Giriş Yap',
-                onPressed: () => context.go(AppRoutes.home),
+                text: _isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap',
+                onPressed: _isLoading ? null : _handleLogin,
               ),
               const SizedBox(height: 20),
 

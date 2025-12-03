@@ -32,8 +32,7 @@ def update_adress():
 
 @adress_route.route('/get', methods=["GET"])
 def get_adress():
-    
-    data = request.get_json()
+    data = request.args.to_dict()
     response = get_address_controller(data)
 
     return response

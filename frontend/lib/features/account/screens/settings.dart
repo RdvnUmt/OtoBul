@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '/core/services/auth_service.dart';
+import '/core/services/address_service.dart';
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key, this.initialPhone, this.initialEmail});
 
@@ -14,6 +16,8 @@ class _SettingsPageState extends State<SettingsPage> {
   // Profile/Favorites ile uyumlu renkler
   static const _primary = Color(0xFF2060E0);
   static const _ink = Color(0xFF102030);
+
+  final AuthService _authService = AuthService();
 
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
@@ -49,14 +53,190 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   // BUTON FONKSİYONLARI (bilerek boş)
-  void _savePhone() {}
-  void _revertPhone() {}
-  void _saveEmail() {}
-  void _revertEmail() {}
-  void _savePassword() {}
-  void _revertPassword() {}
-  void _saveDeleteAccount() {}
-  void _revertDeleteAccount() {}
+  void _savePhone() async {
+    final newPhone = _phoneController.text.trim();
+    if (newPhone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Telefon numarası boş olamaz.')),
+      );
+      return;
+    }
+
+    final ok = await _authService.updatePhone(newPhone);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(ok ? 'Telefon numarası güncellendi.' : 'Telefon numarası güncellenemedi.'),
+        backgroundColor: ok ? Colors.green : Colors.red,
+      ),
+    );
+  }
+
+  void _revertPhone() {
+    _phoneController.text = widget.initialPhone ?? '';
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Telefon numarası eski haline getirildi.')),
+    );
+  }
+
+  void _saveEmail() async {
+    final newEmail = _emailController.text.trim();
+    if (newEmail.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('E-posta boş olamaz.')),
+      );
+      return;
+    }
+
+    final ok = await _authService.updateEmail(newEmail);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(ok ? 'E-posta adresi güncellendi.' : 'E-posta adresi güncellenemedi.'),
+        backgroundColor: ok ? Colors.green : Colors.red,
+      ),
+    );
+  }
+
+  void _revertEmail() {
+    _emailController.text = widget.initialEmail ?? '';
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('E-posta adresi eski haline getirildi.')),
+    );
+  }
+
+  void _savePassword() async {
+    final current = _currentPasswordController.text.trim();
+    final newPass = _newPasswordController.text.trim();
+    final newAgain = _newPasswordAgainController.text.trim();
+
+    if (current.isEmpty || newPass.isEmpty || newAgain.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tüm şifre alanlarını doldurun.')),
+      );
+      return;
+    }
+
+    if (newPass != newAgain) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Yeni şifreler uyuşmuyor.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    final user = _authService.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Şifre değiştirmek için lütfen giriş yapın.')),
+      );
+      return;
+    }
+
+    // Mevcut şifreyi doğrula
+    final loginResp = await _authService.login(user.email, current);
+    if (!loginResp.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mevcut şifre hatalı.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    final ok = await _authService.updatePassword(newPass);
+    if (ok) {
+      _currentPasswordController.clear();
+      _newPasswordController.clear();
+      _newPasswordAgainController.clear();
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(ok ? 'Şifre güncellendi.' : 'Şifre güncellenemedi.'),
+        backgroundColor: ok ? Colors.green : Colors.red,
+      ),
+    );
+  }
+
+  void _revertPassword() {
+    _currentPasswordController.clear();
+    _newPasswordController.clear();
+    _newPasswordAgainController.clear();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Şifre alanları temizlendi.')),
+    );
+  }
+
+  void _saveDeleteAccount() async {
+    final password = _deleteAccountPasswordController.text.trim();
+    final user = _authService.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Hesap silmek için lütfen giriş yapın.')),
+      );
+      return;
+    }
+
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lütfen şifrenizi girin.')),
+      );
+      return;
+    }
+
+    // Şifre doğrulama
+    final loginResp = await _authService.login(user.email, password);
+    if (!loginResp.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Şifre hatalı.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    // 1. Önce kullanıcının adres_id'sini NULL yap (foreign key constraint için)
+    if (user.adresId != null) {
+      debugPrint('🔥 HESAP SİLME: Kullanıcı bilgileri:');
+      debugPrint('   - kullanici_id: ${user.kullaniciId}');
+      debugPrint('   - adres_id: ${user.adresId}');
+      debugPrint('   - email: ${user.email}');
+      
+      debugPrint('🔗 Önce kullanıcının adres_id\'si NULL yapılıyor...');
+      final adresIdRemoved = await _authService.updateUserFields({'adres_id': null});
+      
+      if (adresIdRemoved) {
+        debugPrint('✅ Kullanıcının adres_id\'si NULL yapıldı');
+        
+        // 2. Şimdi adresi sil
+        debugPrint('🏠 Adres siliniyor: ${user.adresId}');
+        final addressDeleted = await AddressService().deleteAddress(user.adresId!);
+        
+        if (addressDeleted) {
+          debugPrint('✅ Adres başarıyla silindi - adres_id: ${user.adresId}');
+        } else {
+          debugPrint('⚠️ Adres silinemedi - adres_id: ${user.adresId}');
+        }
+      } else {
+        debugPrint('⚠️ Kullanıcının adres_id\'si NULL yapılamadı');
+      }
+    } else {
+      debugPrint('ℹ️ Kullanıcının adres_id\'si null, adres silme atlanıyor');
+    }
+
+    // 3. Son olarak hesabı sil
+    debugPrint('👤 Hesap siliniyor...');
+    final ok = await _authService.deleteCurrentUser();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(ok ? 'Hesabınız ve adres bilgileriniz silindi.' : 'Hesap silinemedi.'),
+        backgroundColor: ok ? Colors.red : Colors.orange,
+      ),
+    );
+  }
+
+  void _revertDeleteAccount() {
+    _deleteAccountPasswordController.clear();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('İşlem iptal edildi.')), 
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

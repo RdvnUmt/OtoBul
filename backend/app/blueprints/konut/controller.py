@@ -1,6 +1,7 @@
 from sqlalchemy.sql import text
 from app.blueprints.konut.service import add_service,delete_service,update_service, get_service
 from app.utils.utils import get_method_parser
+from app.policies.policies import id_control_policy
 
 def add_konut_ilan_controller(data):
     
@@ -37,6 +38,9 @@ def add_konut_ilan_controller(data):
 
 def delete_konut_ilan_controller(data):
 
+    if not (id_control_policy("konut_ilan", "konut_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
+
     statement = text(f""" DELETE ilan,kategori,adres
                         FROM konut_ilan 
                         INNER JOIN yerleske_ilan ON yerleske_ilan.yerleske_id = konut_ilan.yerleske_id
@@ -53,6 +57,10 @@ def delete_konut_ilan_controller(data):
 
 
 def update_konut_ilan_controller(data):
+
+    if not (id_control_policy("konut_ilan", "konut_id", data)):
+        return "Bunu yapmaya yetkiniz yok!",401
+    
 
     resultstr = ""
     for item in(data.keys()):
@@ -75,7 +83,6 @@ def update_konut_ilan_controller(data):
 
 
 def get_konut_ilan_controller(data):
-
     query_str,data = get_method_parser(data)
     print(query_str)
     print(data)

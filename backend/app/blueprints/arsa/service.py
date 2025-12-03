@@ -72,12 +72,12 @@ def delete_service(data,statement):
         try: 
             con.execute(statement, data)
             con.commit()
-        except sqlalchemy.exc.DataError as e:
-            return f"Verilerinizi lütfen kontrol edin!",400
-        except sqlalchemy.exc.IntegrityError  as e:
-            return  "Data entegrasyon hatası!",400
-        except sqlalchemy.exc.InvalidRequestError as e:
-            return "Gönderilen verilede eksiklik var lütfen ekleyiniz!",400
+        # except sqlalchemy.exc.DataError as e:
+        #     return f"Verilerinizi lütfen kontrol edin!",400
+        # except sqlalchemy.exc.IntegrityError  as e:
+        #     return  "Data entegrasyon hatası!",400
+        # except sqlalchemy.exc.InvalidRequestError as e:
+        #     return "Gönderilen verilede eksiklik var lütfen ekleyiniz!",400
         except Exception as e :
             return f"{e}",520
         

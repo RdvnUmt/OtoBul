@@ -5,7 +5,104 @@ import 'package:go_router/go_router.dart';
 
 import '/core/models/listing_model.dart';
 import '/core/theme/colors.dart';
+import '/core/services/auth_service.dart';
+import '/core/services/listing_service.dart';
 import '/shared/widgets/listing_card.dart';
+
+/// Gerçek backend'den kullanıcının ilanlarını çeken screen
+class MyListingsScreen extends StatefulWidget {
+  const MyListingsScreen({super.key});
+
+  @override
+  State<MyListingsScreen> createState() => _MyListingsScreenState();
+}
+
+class _MyListingsScreenState extends State<MyListingsScreen> {
+  final ListingService _listingService = ListingService();
+  final AuthService _authService = AuthService();
+
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<Listing> _myListings = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMyListings();
+  }
+
+  Future<void> _deleteListing(Listing listing) async {
+    final ok = await _listingService.deleteListing(listing);
+
+    if (!mounted) return;
+
+    if (ok) {
+      setState(() {
+        _myListings.removeWhere((l) => l.id == listing.id);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('İlan başarıyla silindi.'), backgroundColor: Colors.green),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('İlan silinirken bir hata oluştu.'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _loadMyListings() async {
+    final user = _authService.currentUser;
+    if (user == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'İlanlarınızı görmek için lütfen giriş yapın.';
+      });
+      return;
+    }
+
+    try {
+      final listings = await _listingService.getUserListings(user.kullaniciId);
+      setState(() {
+        _myListings = listings;
+        _isLoading = false;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'İlanlar yüklenirken bir hata oluştu.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            _errorMessage!,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return MyListingsPage(
+      myListings: _myListings,
+      onEditTap: (listing) => context.push('/ilan-ver', extra: listing),
+      onDeleteTap: _deleteListing,
+    );
+  }
+}
 
 class MyListingsPage extends StatelessWidget {
   final List<Listing> myListings;
@@ -13,6 +110,7 @@ class MyListingsPage extends StatelessWidget {
   final ValueChanged<Listing>? onListingTap;
   final ValueChanged<Listing>? onFavoriteTap;
   final ValueChanged<Listing>? onEditTap;
+  final ValueChanged<Listing>? onDeleteTap;
 
   const MyListingsPage({
     super.key,
@@ -20,6 +118,7 @@ class MyListingsPage extends StatelessWidget {
     this.onListingTap,
     this.onFavoriteTap,
     this.onEditTap,
+    this.onDeleteTap,
   });
 
   @override
@@ -77,7 +176,10 @@ class MyListingsPage extends StatelessWidget {
 
                       final onTap = onListingTap != null
                           ? () => onListingTap!(listing)
-                          : () => context.go('/ilan-detay/${listing.id}');
+                          : () => context.go(
+                                '/ilan-detay/${listing.id}',
+                                extra: listing,
+                              );
 
                       // ✅ Default edit davranışı:
                       // - backend gelmeden extra ile Listing taşıyoruz
@@ -86,11 +188,16 @@ class MyListingsPage extends StatelessWidget {
                           ? () => onEditTap!(listing)
                           : () => context.push('/ilan-ver', extra: listing);
 
+                      final onDelete = onDeleteTap == null
+                          ? null
+                          : () => onDeleteTap!(listing);
+
                       return _ListingRowWithEdit(
                         listing: listing,
                         onTap: onTap,
                         onFavoriteTap: onFavoriteTap == null ? null : () => onFavoriteTap!(listing),
                         onEditTap: onEdit,
+                        onDeleteTap: onDelete,
                       );
                     },
                   ),
@@ -103,17 +210,45 @@ class MyListingsPage extends StatelessWidget {
   }
 }
 
+class _DeleteButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _DeleteButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: Colors.red.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.red.withOpacity(0.5), width: 1),
+          ),
+          child: const Icon(Icons.delete_rounded, size: 20, color: Colors.red),
+        ),
+      ),
+    );
+  }
+}
+
 class _ListingRowWithEdit extends StatelessWidget {
   final Listing listing;
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteTap;
   final VoidCallback? onEditTap;
+   final VoidCallback? onDeleteTap;
 
   const _ListingRowWithEdit({
     required this.listing,
     this.onTap,
     this.onFavoriteTap,
     this.onEditTap,
+    this.onDeleteTap,
   });
 
   @override
@@ -122,9 +257,8 @@ class _ListingRowWithEdit extends StatelessWidget {
       builder: (context, c) {
         final isWide = c.maxWidth >= 980;
 
-        final editButton = _EditButton(
-          onTap: onEditTap ?? () {},
-        );
+        final editButton = _EditButton(onTap: onEditTap ?? () {});
+        final deleteButton = _DeleteButton(onTap: onDeleteTap ?? () {});
 
         if (isWide) {
           return Row(
@@ -138,9 +272,16 @@ class _ListingRowWithEdit extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: editButton,
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: editButton,
+                  ),
+                  const SizedBox(height: 8),
+                  deleteButton,
+                ],
               ),
             ],
           );
@@ -156,7 +297,17 @@ class _ListingRowWithEdit extends StatelessWidget {
               onFavoriteTap: onFavoriteTap,
             ),
             const SizedBox(height: 8),
-            Align(alignment: Alignment.centerRight, child: editButton),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  deleteButton,
+                  const SizedBox(width: 8),
+                  editButton,
+                ],
+              ),
+            ),
           ],
         );
       },

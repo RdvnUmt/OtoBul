@@ -28,9 +28,13 @@ def update_arsa():
 
     return response
 
-@arsa_route.route("/get", methods=['GET'])
+@arsa_route.route("/get", methods=['GET','POST'])
 def get_arsa():
-    data = request.get_json(silent=True) or {}
+    if request.method == 'POST':
+        data = request.get_json() or {}
+    else:
+        data = request.args.to_dict()
+
     response = get_arsa_controller(data)
 
     return response
