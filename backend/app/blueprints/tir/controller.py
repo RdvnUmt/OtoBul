@@ -5,8 +5,8 @@ from app.policies.policies import id_control_policy
 
 def add_tir_controller(data):
     
-    statement1 = text(f"""INSERT INTO adres (ulke,sehir,ilce,olusturulma_tarihi ,guncellenme_tarihi)
-                    VALUES (:ulke,:sehir,:ilce,:olusturulma_tarihi,:guncellenme_tarihi );""")
+    statement1 = text(f"""INSERT INTO adres (ulke,sehir,ilce,mahalle,cadde,sokak,bina_no,daire_no, posta_kodu ,olusturulma_tarihi ,guncellenme_tarihi)
+                    VALUES (:ulke,:sehir,:ilce,:mahalle,:cadde,:sokak,:bina_no,:daire_no,:posta_kodu,:olusturulma_tarihi,:guncellenme_tarihi );""")
 
     statement2 = text(f"""INSERT INTO kategori(kategori_ismi, olusturulma_tarihi, guncellenme_tarihi) VALUES (:kategori_ismi, :olusturulma_tarihi, :guncellenme_tarihi); """)
     
