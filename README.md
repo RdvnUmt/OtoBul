@@ -154,19 +154,21 @@ Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyi
 MySQL üzerinde `otobul` isminde bir veritabanı oluşturun ve `database/schema.sql` (varsa) dosyasını import edin.
 
 ### 2. Backend Kurulumu
-
+```bash
 cd backend
 pip install -r requirements.txt
 # .env dosyasını kendi veritabanı bilgilerinize göre düzenleyin
 python run.py
+```
 
-### 2. Backend Kurulumu
-
+### 3. Frontend Kurulumu
+```bash
 cd frontend
 flutter pub get
 flutter run -d chrome
+```
 
-👥 Ekip Üyeleri
+#👥 Ekip Üyeleri
 
 Rıdvan Umut Ünal (221101008) 
 
