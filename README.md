@@ -167,6 +167,7 @@ flutter pub get
 flutter run -d chrome
 
 👥 Ekip Üyeleri
+
 Rıdvan Umut Ünal (221101008) 
 
 Yusuf Mirza Çoban (221101003)
