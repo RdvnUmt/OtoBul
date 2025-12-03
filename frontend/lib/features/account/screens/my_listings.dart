@@ -5,7 +5,84 @@ import 'package:go_router/go_router.dart';
 
 import '/core/models/listing_model.dart';
 import '/core/theme/colors.dart';
+import '/core/services/auth_service.dart';
+import '/core/services/listing_service.dart';
 import '/shared/widgets/listing_card.dart';
+
+/// Gerçek backend'den kullanıcının ilanlarını çeken screen
+class MyListingsScreen extends StatefulWidget {
+  const MyListingsScreen({super.key});
+
+  @override
+  State<MyListingsScreen> createState() => _MyListingsScreenState();
+}
+
+class _MyListingsScreenState extends State<MyListingsScreen> {
+  final ListingService _listingService = ListingService();
+  final AuthService _authService = AuthService();
+
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<Listing> _myListings = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMyListings();
+  }
+
+  Future<void> _loadMyListings() async {
+    final user = _authService.currentUser;
+    if (user == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'İlanlarınızı görmek için lütfen giriş yapın.';
+      });
+      return;
+    }
+
+    try {
+      final listings = await _listingService.getUserListings(user.kullaniciId);
+      setState(() {
+        _myListings = listings;
+        _isLoading = false;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'İlanlar yüklenirken bir hata oluştu.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            _errorMessage!,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return MyListingsPage(
+      myListings: _myListings,
+      onEditTap: (listing) => context.push('/ilan-ver', extra: listing),
+    );
+  }
+}
 
 class MyListingsPage extends StatelessWidget {
   final List<Listing> myListings;
@@ -77,7 +154,10 @@ class MyListingsPage extends StatelessWidget {
 
                       final onTap = onListingTap != null
                           ? () => onListingTap!(listing)
-                          : () => context.go('/ilan-detay/${listing.id}');
+                          : () => context.go(
+                                '/ilan-detay/${listing.id}',
+                                extra: listing,
+                              );
 
                       // ✅ Default edit davranışı:
                       // - backend gelmeden extra ile Listing taşıyoruz

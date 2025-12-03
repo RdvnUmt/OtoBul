@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:my_flutter_app/core/data/mock_listings.dart';
 import 'package:my_flutter_app/core/models/listing_model.dart';
 import '../core/services/auth_service.dart';
 
@@ -117,17 +116,14 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: AppRoutes.listings,
-          pageBuilder: (context, state) => NoTransitionPage(
-            child: MyListingsPage(
-              myListings: MockListings.allListings, // örnek
-              onEditTap: (l) => context.push(AppRoutes.listingCreate, extra: l), // ✅
-            ),
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: MyListingsScreen(),
           ),
         ),
         GoRoute(
           path: AppRoutes.favorites,
-          pageBuilder: (context, state) => NoTransitionPage(
-            child: FavoriteListingsPage(favorites: MockListings.allListings),
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: FavoriteListingsScreen(),
           ),
         ),
         GoRoute(

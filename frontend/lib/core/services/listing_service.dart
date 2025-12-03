@@ -850,6 +850,47 @@ class ListingService {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // KULLANICI İLANLARI
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Belirli bir kullanıcının tüm ilanlarını getir
+  Future<List<Listing>> getUserListings(int kullaniciId) async {
+    final results = await Future.wait([
+      _getUserListingsFromEndpoint(ApiConfig.konutGet, kullaniciId, 'konut'),
+      _getUserListingsFromEndpoint(ApiConfig.arsaGet, kullaniciId, 'arsa'),
+      _getUserListingsFromEndpoint(ApiConfig.turistikGet, kullaniciId, 'turistik'),
+      _getUserListingsFromEndpoint(ApiConfig.devreGet, kullaniciId, 'devremulk'),
+      _getUserListingsFromEndpoint(ApiConfig.otomobilGet, kullaniciId, 'otomobil'),
+      _getUserListingsFromEndpoint(ApiConfig.motosikletGet, kullaniciId, 'motosiklet'),
+      _getUserListingsFromEndpoint(ApiConfig.karavanGet, kullaniciId, 'karavan'),
+      _getUserListingsFromEndpoint(ApiConfig.tirGet, kullaniciId, 'tir'),
+    ]);
+
+    return results.expand((list) => list).toList();
+  }
+
+  Future<List<Listing>> _getUserListingsFromEndpoint(
+    String endpoint,
+    int kullaniciId,
+    String subCategory,
+  ) async {
+    final body = {
+      'where': {
+        'kullanici_id': kullaniciId,
+      }
+    };
+    
+    final response = await _api.post(endpoint, body);
+    
+    if (response.success && response.data is List) {
+      return _isVehicleCategory(subCategory)
+          ? _parseVehicleListings(response.data, subCategory)
+          : _parsePropertyListings(response.data, subCategory);
+    }
+    return [];
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // HELPER METHODS
   // ═══════════════════════════════════════════════════════════════════════════
 
