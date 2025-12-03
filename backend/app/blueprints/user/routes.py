@@ -1,5 +1,4 @@
 from urllib import response
-from app.models.user import User
 from flask import Blueprint, request
 from app.blueprints.user.controller import add_user_controller,delete_user_controller, update_user_controller,get_user_controller
 from flask import session

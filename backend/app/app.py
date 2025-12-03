@@ -82,10 +82,7 @@ def create_app():
     # app.register_blueprint(auth_route, url_prefix = '/auth')
 
 
-    from app.blueprints.user.controller import get_user_controller, add_user_controller
-    from app.models.models import Kullanici
-    
-
+    from app.blueprints.user.controller import get_user_controller, add_user_controller    
 
     @app.route('/login',methods=['POST'])
     def login():
