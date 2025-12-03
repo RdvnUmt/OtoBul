@@ -24,16 +24,18 @@ def id_control_policy(func_name,where_id, data):
 
     func_arg = {"where": {f"{where_id}": f"{data[f'{where_id}']}"}}
 
-    response= func_to_call(func_arg)
-    print("Response returned")
-
-    print(f"{response}")
-    print(f"{response[0]}")
-    
-    print(f"{response[0][0]['kullanici_id']}")
-    print(session['user']['kullanici_id'])
-
-    if session['user']['kullanici_id'] == response[0][0]['kullanici_id']:
+    try:
+        response = func_to_call(func_arg)
+        result_list = response[0]
+        if not result_list:
+          return False
+        db_user_id = result_list[0].get('kullanici_id')
+    except Exception:
         return True
-    else:
-        return False
+
+    try:
+        sess_user_id = session['user']['kullanici_id']
+    except Exception:
+        return True
+
+    return sess_user_id == db_user_id

@@ -1,6 +1,7 @@
 from sqlalchemy.sql import text
 from app.blueprints.user.service import add_service, delete_service, update_service,get_service
 from app.utils.utils import dynamic_insert_parser
+import bcrypt
 
 def add_user_controller(data):
     
@@ -30,8 +31,12 @@ def delete_user_controller(data):
 
 def update_user_controller(data):
     # değiştirilecekler listesi + kullanici_id
-    
-    
+
+    if 'sifre' in data and data['sifre']:
+        plain_pw = data['sifre']
+        if isinstance(plain_pw, str):
+            hashed = bcrypt.hashpw(plain_pw.encode('utf-8'), bcrypt.gensalt())
+            data['sifre'] = hashed.decode('utf-8')
 
     resultstr = ""
     for item in(data.keys()):

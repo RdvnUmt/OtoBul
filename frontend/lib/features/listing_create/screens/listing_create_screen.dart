@@ -586,74 +586,147 @@ class _ListingCreateScreenState extends State<ListingCreateScreen> {
           .label,
       "lastik_durumu_yuzde": _intOrNull(_detailsDraft.lastikYuzdeCtrl.text) ?? 100,
       "yatak_sayisi": _intOrNull(_detailsDraft.yatakSayisiTirCtrl.text) ?? 1,
-      "dorse": _detailsDraft.dorse ? 1 : 0,
+      'dorse': _detailsDraft.dorse ? 1 : 0,
     };
   }
 
   Future<void> _submit() async {
     final ok = _formKey.currentState?.validate() ?? false;
     if (!ok) return;
+    final service = ListingService();
 
-    // Emlak kategorileri
-    if (_mainCategory == ListingMainCategory.emlak && !isEditing) {
+    // Emlak kategorileri (create + update)
+    if (_mainCategory == ListingMainCategory.emlak) {
       bool success = false;
       String categoryName = "";
 
       switch (_emlakCategory) {
         case ListingEmlakCategory.konut:
           categoryName = "Konut";
-          success = await ListingService().createKonut(_buildKonutPayload());
+          final payload = _buildKonutPayload();
+          if (isEditing) {
+            final id = _seed?.details['konut_id'];
+            if (id != null) payload['konut_id'] = id;
+            payload.remove('olusturulma_tarihi');
+            payload.remove('guncellenme_tarihi');
+            success = await service.updateKonut(payload);
+          } else {
+            success = await service.createKonut(payload);
+          }
           break;
         case ListingEmlakCategory.arsa:
           categoryName = "Arsa";
-          success = await ListingService().createArsa(_buildArsaPayload());
+          final payload = _buildArsaPayload();
+          if (isEditing) {
+            final id = _seed?.details['arsa_id'];
+            if (id != null) payload['arsa_id'] = id;
+            payload.remove('olusturulma_tarihi');
+            payload.remove('guncellenme_tarihi');
+            success = await service.updateArsa(payload);
+          } else {
+            success = await service.createArsa(payload);
+          }
           break;
         case ListingEmlakCategory.turistik:
           categoryName = "Turistik Tesis";
-          success = await ListingService().createTuristik(_buildTuristikPayload());
+          final payload = _buildTuristikPayload();
+          if (isEditing) {
+            final id = _seed?.details['turistik_id'];
+            if (id != null) payload['turistik_id'] = id;
+            payload.remove('olusturulma_tarihi');
+            payload.remove('guncellenme_tarihi');
+            success = await service.updateTuristik(payload);
+          } else {
+            success = await service.createTuristik(payload);
+          }
           break;
         case ListingEmlakCategory.devreMulk:
           categoryName = "Devre Mülk";
-          success = await ListingService().createDevreMulk(_buildDevreMulkPayload());
+          final payload = _buildDevreMulkPayload();
+          if (isEditing) {
+            final id = _seed?.details['devre_id'];
+            if (id != null) payload['devre_id'] = id;
+            payload.remove('olusturulma_tarihi');
+            payload.remove('guncellenme_tarihi');
+            success = await service.updateDevreMulk(payload);
+          } else {
+            success = await service.createDevreMulk(payload);
+          }
           break;
       }
-      
+
       if (!mounted) return;
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$categoryName ilanı başarıyla oluşturuldu!')),
+          SnackBar(content: Text('$categoryName ilanı başarıyla ${isEditing ? 'güncellendi' : 'oluşturuldu'}!')),
         );
         context.pop(true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$categoryName ilanı oluşturulurken bir hata oluştu.')),
+          SnackBar(content: Text('$categoryName ilanı ${isEditing ? 'güncellenirken' : 'oluşturulurken'} bir hata oluştu.')),
         );
       }
       return;
     }
 
-    // Vasıta kategorileri
-    if (_mainCategory == ListingMainCategory.vasita && !isEditing) {
+    // Vasıta kategorileri (create + update)
+    if (_mainCategory == ListingMainCategory.vasita) {
       bool success = false;
       String categoryName = "";
 
       switch (_vasitaCategory) {
         case ListingVasitaCategory.otomobil:
           categoryName = "Otomobil";
-          success = await ListingService().createOtomobil(_buildOtomobilPayload());
+          final payload = _buildOtomobilPayload();
+          if (isEditing) {
+            final id = _seed?.details['otomobil_id'];
+            if (id != null) payload['otomobil_id'] = id;
+            payload.remove('olusturulma_tarihi');
+            payload.remove('guncellenme_tarihi');
+            success = await service.updateOtomobil(payload);
+          } else {
+            success = await service.createOtomobil(payload);
+          }
           break;
         case ListingVasitaCategory.motosiklet:
           categoryName = "Motosiklet";
-          success = await ListingService().createMotosiklet(_buildMotosikletPayload());
+          final payload = _buildMotosikletPayload();
+          if (isEditing) {
+            final id = _seed?.details['moto_id'];
+            if (id != null) payload['moto_id'] = id;
+            payload.remove('olusturulma_tarihi');
+            payload.remove('guncellenme_tarihi');
+            success = await service.updateMotosiklet(payload);
+          } else {
+            success = await service.createMotosiklet(payload);
+          }
           break;
         case ListingVasitaCategory.karavan:
           categoryName = "Karavan";
-          success = await ListingService().createKaravan(_buildKaravanPayload());
+          final payload = _buildKaravanPayload();
+          if (isEditing) {
+            final id = _seed?.details['karavan_id'];
+            if (id != null) payload['karavan_id'] = id;
+            payload.remove('olusturulma_tarihi');
+            payload.remove('guncellenme_tarihi');
+            success = await service.updateKaravan(payload);
+          } else {
+            success = await service.createKaravan(payload);
+          }
           break;
         case ListingVasitaCategory.tir:
           categoryName = "Tır";
-          success = await ListingService().createTir(_buildTirPayload());
+          final payload = _buildTirPayload();
+          if (isEditing) {
+            final id = _seed?.details['tir_id'];
+            if (id != null) payload['tir_id'] = id;
+            payload.remove('olusturulma_tarihi');
+            payload.remove('guncellenme_tarihi');
+            success = await service.updateTir(payload);
+          } else {
+            success = await service.createTir(payload);
+          }
           break;
       }
 
@@ -661,18 +734,18 @@ class _ListingCreateScreenState extends State<ListingCreateScreen> {
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$categoryName ilanı başarıyla oluşturuldu!')),
+          SnackBar(content: Text('$categoryName ilanı başarıyla ${isEditing ? 'güncellendi' : 'oluşturuldu'}!')),
         );
         context.pop(true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$categoryName ilanı oluşturulurken bir hata oluştu.')),
+          SnackBar(content: Text('$categoryName ilanı ${isEditing ? 'güncellenirken' : 'oluşturulurken'} bir hata oluştu.')),
         );
       }
       return;
     }
 
-    // Fallback (Edit modu vs.)
+    // Fallback
     final payload = _buildPayload();
     context.pop(payload);
   }

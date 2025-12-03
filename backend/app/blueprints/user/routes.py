@@ -19,10 +19,7 @@ def delete_user():
     #kullanıcı_id ver kafi aga
     data  = request.get_json()
 
-    try: 
-        if not session['user']['kullanici_id'] == data['kullanici_id']:
-            return "Bunu yapmaya yetkiniz yok", 401
-    except:
+    if not data or 'kullanici_id' not in data:
         return "Lütfen kullanici_id giriniz",400
 
     response = delete_user_controller(data)
@@ -34,10 +31,7 @@ def delete_user():
 def update_user():
     data = request.get_json()
 
-    try: 
-        if not session['user']['kullanici_id'] == data['kullanici_id']:
-            return "Bunu yapmaya yetkiniz yok", 401
-    except:
+    if not data or 'kullanici_id' not in data:
         return "Lütfen kullanici_id giriniz",400
 
     response = update_user_controller(data)

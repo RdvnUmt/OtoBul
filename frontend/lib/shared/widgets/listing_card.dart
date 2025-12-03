@@ -198,26 +198,6 @@ class _ListingCardState extends State<ListingCard> {
                 )
               : null,
         ),
-
-        // İlan No
-        Positioned(
-          bottom: 8,
-          left: 8,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.7),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              '#${d.listingNo}',
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                color: Colors.white70,
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }

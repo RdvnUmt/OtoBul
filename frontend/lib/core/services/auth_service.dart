@@ -211,6 +211,80 @@ class AuthService {
     return null;
   }
 
+  /// Kullanıcı bilgilerini güncelle (/user/update)
+  Future<bool> updateUserFields(Map<String, dynamic> fields) async {
+    if (_currentUser == null) return false;
+
+    try {
+      final now = DateTime.now().toIso8601String();
+      final body = {
+        ...fields,
+        'kullanici_id': _currentUser!.kullaniciId,
+        'guncellenme_tarihi': now,
+      };
+
+      final uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.userUpdate}');
+      final response = await http.put(
+        uri,
+        headers: _headers,
+        body: jsonEncode(body),
+      );
+
+      debugPrint('👤 UpdateUser Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Güncel kullanıcı bilgisini tekrar çek
+        await fetchUserById(_currentUser!.kullaniciId);
+        return true;
+      }
+    } catch (e) {
+      debugPrint('❌ UpdateUser Hatası: $e');
+    }
+
+    return false;
+  }
+
+  /// Telefon güncelle
+  Future<bool> updatePhone(String newPhone) {
+    return updateUserFields({'telefon_no': newPhone});
+  }
+
+  /// E-posta güncelle
+  Future<bool> updateEmail(String newEmail) {
+    return updateUserFields({'email': newEmail});
+  }
+
+  /// Şifre güncelle
+  Future<bool> updatePassword(String newPassword) {
+    return updateUserFields({'sifre': newPassword});
+  }
+
+  /// Hesabı sil (/user/delete)
+  Future<bool> deleteCurrentUser() async {
+    if (_currentUser == null) return false;
+
+    try {
+      final uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.userDelete}');
+      final body = jsonEncode({'kullanici_id': _currentUser!.kullaniciId});
+      final response = await http.delete(
+        uri,
+        headers: _headers,
+        body: body,
+      );
+
+      debugPrint('🗑 DeleteUser Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 200) {
+        clearUser();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('❌ DeleteUser Hatası: $e');
+    }
+
+    return false;
+  }
+
   /// Mevcut kullanıcı bilgilerini getir
   Future<User?> _fetchCurrentUser() async {
     try {

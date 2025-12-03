@@ -367,9 +367,21 @@ class ListingService {
     return response.success;
   }
 
+  /// Konut ilanı güncelle
+  Future<bool> updateKonut(Map<String, dynamic> payload) async {
+    final response = await _api.put(ApiConfig.konutUpdate, payload);
+    return response.success;
+  }
+
   /// Arsa ilanı oluştur
   Future<bool> createArsa(Map<String, dynamic> payload) async {
     final response = await _api.post(ApiConfig.arsaAdd, payload);
+    return response.success;
+  }
+
+  /// Arsa ilanı güncelle
+  Future<bool> updateArsa(Map<String, dynamic> payload) async {
+    final response = await _api.put(ApiConfig.arsaUpdate, payload);
     return response.success;
   }
 
@@ -379,9 +391,21 @@ class ListingService {
     return response.success;
   }
 
+  /// Turistik Tesis ilanı güncelle
+  Future<bool> updateTuristik(Map<String, dynamic> payload) async {
+    final response = await _api.put(ApiConfig.turistikUpdate, payload);
+    return response.success;
+  }
+
   /// Devre Mülk ilanı oluştur
   Future<bool> createDevreMulk(Map<String, dynamic> payload) async {
     final response = await _api.post(ApiConfig.devreAdd, payload);
+    return response.success;
+  }
+
+  /// Devre Mülk ilanı güncelle
+  Future<bool> updateDevreMulk(Map<String, dynamic> payload) async {
+    final response = await _api.put(ApiConfig.devreUpdate, payload);
     return response.success;
   }
 
@@ -391,9 +415,21 @@ class ListingService {
     return response.success;
   }
 
+  /// Otomobil ilanı güncelle
+  Future<bool> updateOtomobil(Map<String, dynamic> payload) async {
+    final response = await _api.put(ApiConfig.otomobilUpdate, payload);
+    return response.success;
+  }
+
   /// Motosiklet ilanı oluştur
   Future<bool> createMotosiklet(Map<String, dynamic> payload) async {
     final response = await _api.post(ApiConfig.motosikletAdd, payload);
+    return response.success;
+  }
+
+  /// Motosiklet ilanı güncelle
+  Future<bool> updateMotosiklet(Map<String, dynamic> payload) async {
+    final response = await _api.put(ApiConfig.motosikletUpdate, payload);
     return response.success;
   }
 
@@ -403,9 +439,57 @@ class ListingService {
     return response.success;
   }
 
+  /// Karavan ilanı güncelle
+  Future<bool> updateKaravan(Map<String, dynamic> payload) async {
+    final response = await _api.put(ApiConfig.karavanUpdate, payload);
+    return response.success;
+  }
+
   /// Tır ilanı oluştur
   Future<bool> createTir(Map<String, dynamic> payload) async {
     final response = await _api.post(ApiConfig.tirAdd, payload);
+    return response.success;
+  }
+
+  /// Tır ilanı güncelle
+  Future<bool> updateTir(Map<String, dynamic> payload) async {
+    final response = await _api.put(ApiConfig.tirUpdate, payload);
+    return response.success;
+  }
+
+  /// İlanı kategorisine göre sil
+  Future<bool> deleteListing(Listing listing) async {
+    final d = listing.details;
+
+    switch (listing.subCategory) {
+      case 'konut':
+        return _deleteWithId(ApiConfig.konutDelete, 'konut_id', d['konut_id']);
+      case 'arsa':
+        return _deleteWithId(ApiConfig.arsaDelete, 'arsa_id', d['arsa_id']);
+      case 'turistik':
+        return _deleteWithId(ApiConfig.turistikDelete, 'turistik_id', d['turistik_id']);
+      case 'devremulk':
+        return _deleteWithId(ApiConfig.devreDelete, 'devre_id', d['devre_id']);
+      case 'otomobil':
+        return _deleteWithId(ApiConfig.otomobilDelete, 'otomobil_id', d['otomobil_id']);
+      case 'motosiklet':
+        return _deleteWithId(ApiConfig.motosikletDelete, 'moto_id', d['moto_id']);
+      case 'karavan':
+        return _deleteWithId(ApiConfig.karavanDelete, 'karavan_id', d['karavan_id']);
+      case 'tir':
+        return _deleteWithId(ApiConfig.tirDelete, 'tir_id', d['tir_id']);
+      default:
+        return false;
+    }
+  }
+
+  Future<bool> _deleteWithId(String endpoint, String idKey, Object? idValue) async {
+    if (idValue == null) return false;
+
+    final parsed = _parseInt(idValue) ?? int.tryParse(idValue.toString()) ?? idValue;
+    final body = <String, dynamic>{idKey: parsed};
+
+    final response = await _api.delete(endpoint, body);
     return response.success;
   }
 
@@ -768,6 +852,16 @@ class ListingService {
           'lastikYuzde': map['lastik_durumu_yuzde'],
           'yatakSayisiTir': map['yatak_sayisi'],
           'dorse': map['dorse'] == 1,
+          // Kimlik alanları (update işlemleri için)
+          'ilan_id': map['ilan_id'],
+          'adres_id': map['adres_id'],
+          'kategori_id': map['kategori_id'],
+          'model_id': map['model_id'],
+          'vasita_id': map['vasita_id'],
+          'otomobil_id': map['otomobil_id'],
+          'moto_id': map['moto_id'],
+          'karavan_id': map['karavan_id'],
+          'tir_id': map['tir_id'],
         },
       );
     }).toList();
@@ -844,6 +938,16 @@ class ListingService {
           'yapiDurumu': map['yapi_durumu'],
           // Devre Mülk spesifik
           'devreDonem': map['donem'],
+          // Kimlik alanları (update işlemleri için)
+          'ilan_id': map['ilan_id'],
+          'adres_id': map['adres_id'],
+          'kategori_id': map['kategori_id'],
+          'emlak_id': map['emlak_id'],
+          'yerleske_id': map['yerleske_id'],
+          'konut_id': map['konut_id'],
+          'arsa_id': map['arsa_id'],
+          'turistik_id': map['turistik_id'],
+          'devre_id': map['devre_id'],
         },
       );
     }).toList();

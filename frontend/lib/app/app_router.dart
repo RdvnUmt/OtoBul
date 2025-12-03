@@ -128,8 +128,17 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: AppRoutes.settings,
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: SettingsPage()),
+          pageBuilder: (context, state) {
+            final auth = AuthService();
+            final user = auth.currentUser;
+
+            return NoTransitionPage(
+              child: SettingsPage(
+                initialPhone: user?.telefonNo,
+                initialEmail: user?.email,
+              ),
+            );
+          },
         ),
       ],
     ),
