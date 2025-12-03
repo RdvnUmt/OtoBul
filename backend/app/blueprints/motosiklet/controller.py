@@ -5,9 +5,9 @@ from app.policies.policies import id_control_policy
 
 def add_motosiklet_controller(data):
     
-    statement1 = text(f"""INSERT INTO adres (ulke,sehir,ilce,mahalle,cadde,sokak,bina_no,daire_no, posta_kodu ,olusturulma_tarihi ,guncellenme_tarihi)
-                    VALUES (:ulke,:sehir,:ilce,:mahalle,:cadde,:sokak,:bina_no,:daire_no,:posta_kodu,:olusturulma_tarihi,:guncellenme_tarihi );""")
-
+    statement1 = text(f"""INSERT INTO adres (ulke,sehir,ilce,olusturulma_tarihi ,guncellenme_tarihi)
+                    VALUES (:ulke,:sehir,:ilce,:olusturulma_tarihi,:guncellenme_tarihi );""")
+    
     statement2 = text(f"""INSERT INTO kategori(kategori_ismi, olusturulma_tarihi, guncellenme_tarihi) VALUES (:kategori_ismi, :olusturulma_tarihi, :guncellenme_tarihi); """)
     
     statement3 = text(f""" INSERT INTO Ilan (kullanici_id,adres_id,baslik,aciklama ,fiyat,kategori_id,ilan_tipi,kredi_uygunlugu ,kimden ,takas,

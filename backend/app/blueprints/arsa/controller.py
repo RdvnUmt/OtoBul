@@ -1,12 +1,13 @@
 from sqlalchemy.sql import text
 from app.blueprints.arsa.service import add_service,delete_service,update_service, get_service
-from app.utils.utils import get_method_parser
+from app.utils.utils import get_method_parser, dynamic_insert_parser
 from app.policies.policies import id_control_policy
 
 def add_arsa_controller(data):
+
     
-    statement1 = text(f"""INSERT INTO adres (ulke,sehir,ilce,mahalle,cadde,sokak,bina_no,daire_no, posta_kodu ,olusturulma_tarihi ,guncellenme_tarihi)
-                    VALUES (:ulke,:sehir,:ilce,:mahalle,:cadde,:sokak,:bina_no,:daire_no,:posta_kodu,:olusturulma_tarihi,:guncellenme_tarihi );""")
+    statement1 = text(f"""INSERT INTO adres (ulke,sehir,ilce,olusturulma_tarihi ,guncellenme_tarihi)
+                    VALUES (:ulke,:sehir,:ilce,:olusturulma_tarihi,:guncellenme_tarihi );""")
 
     statement2 = text(f"""INSERT INTO kategori(kategori_ismi, olusturulma_tarihi, guncellenme_tarihi) VALUES (:kategori_ismi, :olusturulma_tarihi, :guncellenme_tarihi); """)
     
