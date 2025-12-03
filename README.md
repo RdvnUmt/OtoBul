@@ -1,3 +1,5 @@
+# OtoBul - Gayrimenkul ve Taşıt İlan Platformu
+
 📝 README — Flask Backend
 📌 Project Overview
 
@@ -80,7 +82,7 @@ This project is licensed under the MIT License.
 
 
 
-# OtoBul - Gayrimenkul ve Taşıt İlan Platformu
+
 
 **OtoBul**, kullanıcıların gayrimenkul ve otomotiv sektöründeki varlıklarını listeleyebildiği, potansiyel alıcıların ise gelişmiş sorgulama ve filtreleme işlemleri yapabildiği, ölçeklenebilir bir e-ticaret platformudur.
 
