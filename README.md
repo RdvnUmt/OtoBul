@@ -18,21 +18,31 @@ Ready-to-deploy design
 Aşağıdaki adımlarla backend’i lokal ortamda çalıştırabilirsiniz.
 
 1️⃣ Clone the Repository
+
+```bash
 git clone <repository-url>
 cd <project-folder>
+```
 
 2️⃣ Create a Virtual Environment (recommended)
+
+```bash
 python -m venv venv
+```
 
 Activate environment:
 
 Windows
 
+```bash
 venv\Scripts\activate
+```
 
 MacOS / Linux
 
+```bash
 source venv/bin/activate
+```
 
 3️⃣ Install Dependencies
 
@@ -47,7 +57,9 @@ pip install -r requirements.txt
 
 Proje, run.py dosyası üzerinden başlatılır.
 
+```bash
 python run.py
+```
 
 Server başarılı bir şekilde başlatıldığında tipik olarak:
 
