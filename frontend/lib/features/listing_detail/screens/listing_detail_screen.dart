@@ -4,12 +4,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '/core/theme/colors.dart';
 import '/core/models/listing_model.dart';
+import '/core/services/auth_service.dart';
+import '/core/services/favorite_service.dart';
 import '/shared/app_footer.dart';
 
 class ListingDetailScreen extends StatelessWidget {
   final Listing? listing;
 
   const ListingDetailScreen({super.key, this.listing});
+
+  static final AuthService _authService = AuthService();
+  static final FavoriteService _favoriteService = FavoriteService();
 
   /// HashCode -> string kısaysa substring patlamasın diye güvenli 8 hane üretir
   String _safeShortId(Object id) {
@@ -102,7 +107,7 @@ class ListingDetailScreen extends StatelessWidget {
                     children: [
                       Expanded(child: _buildDetailsCard(listing)),
                       const SizedBox(height: 16),
-                      _buildFavoriteButton(),
+                      _buildFavoriteButton(context, listing),
                     ],
                   ),
                 ),
@@ -268,32 +273,64 @@ class ListingDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFavoriteButton() {
-    return Container(
-      width: double.infinity,
-      height: 48,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFD97706), Color(0xFFB45309)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.star, size: 20, color: Colors.white),
-          const SizedBox(width: 8),
-          Text(
-            'Favorilere Ekle',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
+  Widget _buildFavoriteButton(BuildContext context, Listing listing) {
+    return InkWell(
+      onTap: () async {
+        final user = _authService.currentUser;
+        if (user == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Favorilere eklemek için lütfen giriş yapın.')),
+          );
+          return;
+        }
+
+        final ilanId = int.tryParse(listing.id) ?? 0;
+        if (ilanId == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('İlan ID geçersiz, favorilere eklenemedi.'), backgroundColor: Colors.red),
+          );
+          return;
+        }
+
+        final ok = await _favoriteService.addFavorite(
+          ilanId: ilanId,
+          kullaniciId: user.kullaniciId,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ok ? 'Favorilere eklendi.' : 'Favorilere eklenemedi.'),
+            backgroundColor: ok ? Colors.green : Colors.red,
           ),
-        ],
+        );
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: double.infinity,
+        height: 48,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFD97706), Color(0xFFB45309)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.star, size: 20, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(
+              'Favorilere Ekle',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
