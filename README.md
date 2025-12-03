@@ -168,7 +168,7 @@ flutter pub get
 flutter run -d chrome
 ```
 
-👥 ## Ekip Üyeleri
+## 👥 Ekip Üyeleri
 
 Rıdvan Umut Ünal (221101008) 
 
