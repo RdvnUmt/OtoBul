@@ -1,6 +1,25 @@
 # OtoBul - Gayrimenkul ve Taşıt İlan Platformu
 
-📝 README — Flask Backend
+**OtoBul**, kullanıcıların gayrimenkul ve otomotiv sektöründeki varlıklarını listeleyebildiği, potansiyel alıcıların ise gelişmiş sorgulama ve filtreleme işlemleri yapabildiği, ölçeklenebilir bir e-ticaret platformudur.
+
+Bu proje, **BİL 372 Veritabanı Sistemleri** dersi kapsamında geliştirilmiştir.
+
+
+## 📋 İçindekiler
+- [Proje Hakkında](#proje-hakkında)
+- [Özellikler](#özellikler)
+- [Teknoloji Yığını](#teknoloji-yığını)
+- [Veritabanı Mimarisi](#veritabanı-mimarisi)
+- [Kurulum](#kurulum)
+- [Ekip Üyeleri](#ekip-üyeleri)
+
+## 🚀 Proje Hakkında
+
+Günümüzde tüketici alışkanlıklarının dijitalleşmesiyle birlikte, alıcı ve satıcıların güvenilir bir ortamda buluşması kritik bir ihtiyaçtır[cite: 8]. OtoBul, geniş yelpazeye yayılan varlık türlerini (Emlak ve Vasıta) tek bir merkezi sistem üzerinde kategorize ederek bu ihtiyaca çözüm sunar[cite: 10].
+
+Projenin temel amacı; veri bütünlüğünün korunduğu, performanslı ve kullanıcı dostu bir ticaret ortamı sağlamaktır[cite: 13].
+
+Flask Backend
 📌 Project Overview
 
 This project is a Flask-based backend API that provides the core server-side functionality for the application.
@@ -75,33 +94,6 @@ Pull request, issue veya önerileriniz memnuniyetle kabul edilir.
 📄 License
 
 This project is licensed under the MIT License.
-
-
-
-
-
-
-
-
-
-**OtoBul**, kullanıcıların gayrimenkul ve otomotiv sektöründeki varlıklarını listeleyebildiği, potansiyel alıcıların ise gelişmiş sorgulama ve filtreleme işlemleri yapabildiği, ölçeklenebilir bir e-ticaret platformudur.
-
-Bu proje, **BİL 372 Veritabanı Sistemleri** dersi kapsamında geliştirilmiştir.
-
-
-## 📋 İçindekiler
-- [Proje Hakkında](#proje-hakkında)
-- [Özellikler](#özellikler)
-- [Teknoloji Yığını](#teknoloji-yığını)
-- [Veritabanı Mimarisi](#veritabanı-mimarisi)
-- [Kurulum](#kurulum)
-- [Ekip Üyeleri](#ekip-üyeleri)
-
-## 🚀 Proje Hakkında
-
-Günümüzde tüketici alışkanlıklarının dijitalleşmesiyle birlikte, alıcı ve satıcıların güvenilir bir ortamda buluşması kritik bir ihtiyaçtır[cite: 8]. OtoBul, geniş yelpazeye yayılan varlık türlerini (Emlak ve Vasıta) tek bir merkezi sistem üzerinde kategorize ederek bu ihtiyaca çözüm sunar[cite: 10].
-
-Projenin temel amacı; veri bütünlüğünün korunduğu, performanslı ve kullanıcı dostu bir ticaret ortamı sağlamaktır[cite: 13].
 
 ## ✨ Özellikler
 
