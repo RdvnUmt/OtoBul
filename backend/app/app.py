@@ -64,7 +64,7 @@ def create_app():
     from app.blueprints.arsa.routes import arsa_route
 
 
-    app.register_blueprint(user_route,url_prefix='/user')
+    app.register_blueprint(user_route,url_prefix='/user') 
     app.register_blueprint(favori_route, url_prefix = '/favori')
     app.register_blueprint(adress_route, url_prefix = '/adres')
     app.register_blueprint(otomobil_route, url_prefix = '/otomobil')
