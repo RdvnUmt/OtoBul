@@ -6,8 +6,7 @@ from flask_bcrypt import Bcrypt
 from datetime import timedelta
 
 pymysql.install_as_MySQLdb()
-#Engine için Mysql clientını oluşturur.
-#Ya da mysqlclient
+
 
 def create_app():
     app = Flask(__name__)
@@ -52,8 +51,6 @@ def create_app():
 
 
 
-
-    from app.blueprints.core.core import core
     from app.blueprints.favori.routes import favori_route
     from app.blueprints.user.routes import user_route
     from app.blueprints.adress.routes import adress_route
@@ -65,10 +62,9 @@ def create_app():
     from app.blueprints.turistik.routes import turistik_tesis_route
     from app.blueprints.konut.routes import konut_ilan_route
     from app.blueprints.arsa.routes import arsa_route
-    # from app.blueprints.auth.routes import auth_route
 
-    app.register_blueprint(core,url_prefix='/core')
-    app.register_blueprint(user_route,url_prefix='/user')
+
+    app.register_blueprint(user_route,url_prefix='/user') 
     app.register_blueprint(favori_route, url_prefix = '/favori')
     app.register_blueprint(adress_route, url_prefix = '/adres')
     app.register_blueprint(otomobil_route, url_prefix = '/otomobil')
@@ -79,13 +75,9 @@ def create_app():
     app.register_blueprint(turistik_tesis_route, url_prefix = '/turistik')
     app.register_blueprint(konut_ilan_route, url_prefix = '/konut')
     app.register_blueprint(arsa_route, url_prefix = '/arsa')
-    # app.register_blueprint(auth_route, url_prefix = '/auth')
 
 
-    from app.blueprints.user.controller import get_user_controller, add_user_controller
-    from app.models.models import Kullanici
-    
-
+    from app.blueprints.user.controller import get_user_controller, add_user_controller    
 
     @app.route('/login',methods=['POST'])
     def login():
@@ -98,7 +90,6 @@ def create_app():
         print(user)
         print("User ele geçirildi mi ne oldu!")
         print(user[0])
-        # print(user[0]["sifre"])
         if bcrypt.check_password_hash(user[0]['sifre'], sifre):
             print("Login başarılı kaydediliyor")
             print(user[0])
