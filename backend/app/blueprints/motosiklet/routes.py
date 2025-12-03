@@ -28,9 +28,12 @@ def update_motosiklet():
 
     return response
 
-@motosiklet_route.route("/get", methods=['GET'])
+@motosiklet_route.route("/get", methods=['GET','POST'])
 def get_motosiklet():
-    data = request.args.to_dict()
+    if request.method == 'POST':
+        data = request.get_json() or {}
+    else:
+        data = request.args.to_dict()
     response = get_motosiklet_controller(data)
 
     return response

@@ -28,9 +28,13 @@ def update_tir():
 
     return response
 
-@tir_route.route("/get", methods=['GET'])
+@tir_route.route("/get", methods=['GET','POST'])
 def get_tir():
-    data = request.args.to_dict()
+    if request.method == 'POST':
+        data = request.get_json() or {}
+    else:
+        data = request.args.to_dict()
+
     response = get_tir_controller(data)
 
     return response
