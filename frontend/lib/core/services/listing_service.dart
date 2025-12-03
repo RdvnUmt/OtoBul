@@ -361,6 +361,12 @@ class ListingService {
     return [];
   }
 
+  /// Konut ilanı oluştur
+  Future<bool> createKonut(Map<String, dynamic> payload) async {
+    final response = await _api.post(ApiConfig.konutAdd, payload);
+    return response.success;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // ARSA
   // ═══════════════════════════════════════════════════════════════════════════
