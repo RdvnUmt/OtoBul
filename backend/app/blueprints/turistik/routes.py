@@ -28,9 +28,13 @@ def update_turistik_tesis():
 
     return response
 
-@turistik_tesis_route.route("/get", methods=['GET'])
+@turistik_tesis_route.route("/get", methods=['GET','POST'])
 def get_turistik_tesis():
-    data = request.args.to_dict()
+    if request.method == 'POST':
+        data = request.get_json() or {}
+    else:
+        data = request.args.to_dict()
+
     response = get_turistik_tesis_controller(data)
 
     return response

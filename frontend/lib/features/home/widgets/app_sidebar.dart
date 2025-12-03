@@ -4,10 +4,14 @@ import '../../../core/theme/colors.dart';   // path sende farklıysa düzelt
 
 class AppSidebar extends StatefulWidget {
   final Function(String category, String? subCategory)? onCategorySelected;
+  final VoidCallback? onFilterTap;
+  final int activeFilterCount;
 
   const AppSidebar({
     super.key,
     this.onCategorySelected,
+    this.onFilterTap,
+    this.activeFilterCount = 0,
   });
 
   @override
@@ -40,12 +44,22 @@ class _AppSidebarState extends State<AppSidebar> {
           
           const Divider(color: AppColors.divider, height: 1),
           
+          // Filtre Butonu
+          _buildFilterButton(),
+          
+          const Divider(color: AppColors.divider, height: 1),
+          
           // Kategoriler
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Column(
                 children: [
+                  // Tüm İlanlar
+                  _buildAllListingsButton(),
+                  
+                  const SizedBox(height: 4),
+                  
                   // Emlak Kategorisi
                   _SidebarCategory(
                     icon: Icons.home_work_outlined,
@@ -132,6 +146,127 @@ class _AppSidebarState extends State<AppSidebar> {
       _selectedSubCategory = subCategory;
     });
     widget.onCategorySelected?.call(category, subCategory);
+  }
+
+  void _selectAllListings() {
+    setState(() {
+      _selectedCategory = null;
+      _selectedSubCategory = null;
+    });
+    widget.onCategorySelected?.call('all', null);
+  }
+
+  Widget _buildAllListingsButton() {
+    final isSelected = _selectedCategory == null && _selectedSubCategory == null;
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _selectAllListings,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.apps,
+                  size: 20,
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Tüm İlanlar',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterButton() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onFilterTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: widget.activeFilterCount > 0 
+                  ? AppColors.primary.withOpacity(0.1)
+                  : AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: widget.activeFilterCount > 0 
+                    ? AppColors.primary.withOpacity(0.3)
+                    : AppColors.border,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.tune,
+                  color: widget.activeFilterCount > 0 
+                      ? AppColors.primary 
+                      : AppColors.textSecondary,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Filtrele',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: widget.activeFilterCount > 0 
+                          ? AppColors.primary 
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                if (widget.activeFilterCount > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${widget.activeFilterCount}',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                else
+                  Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textTertiary,
+                    size: 20,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

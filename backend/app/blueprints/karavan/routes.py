@@ -28,9 +28,13 @@ def update_karavan():
 
     return response
 
-@karavan_route.route("/get", methods=['GET'])
+@karavan_route.route("/get", methods=['GET','POST'])
 def get_karavan():
-    data = request.args.to_dict()
+    if request.method == 'POST':
+        data = request.get_json() or {}
+    else:
+        data = request.args.to_dict()
+
     response = get_karavan_controller(data)
 
     return response

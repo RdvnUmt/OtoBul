@@ -28,9 +28,13 @@ def update_konut_ilan():
 
     return response
 
-@konut_ilan_route.route("/get", methods=['GET'])
+@konut_ilan_route.route("/get", methods=['GET','POST'])
 def get_konut_ilan():
-    data = request.args.to_dict()
+    if request.method == 'POST':
+        data = request.get_json() or {}
+    else:
+        data = request.args.to_dict()
+
     response = get_konut_ilan_controller(data)
 
     return response

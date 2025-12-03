@@ -6,6 +6,8 @@ import '../../../core/data/mock_listings.dart';
 import '../../../core/models/listing_model.dart';
 import '../../../core/services/listing_service.dart';
 import '../widgets/app_sidebar.dart';
+import '../widgets/filter_screen.dart';
+import '../widgets/pagination_widget.dart';
 import '../../../shared/app_footer.dart';
 import '../../../shared/widgets/listing_card.dart';
 
@@ -26,6 +28,16 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _useApi = true; // API mi Mock mu kullanılacak
   String? _errorMessage;
 
+  // Filtreleme ve Pagination
+  FilterParams _filters = const FilterParams();
+  int _totalCount = 0;
+  int _currentPage = 1;
+  int _totalPages = 1;
+  
+  // Sıralama
+  String _sortBy = 'tarih';
+  String _sortOrder = 'desc';
+
   final ListingService _listingService = ListingService();
 
   @override
@@ -42,20 +54,39 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      List<Listing> listings;
+      // Sıralama parametrelerini ekle
+      final filtersWithSort = _filters.copyWith(
+        sortBy: _sortBy,
+        sortOrder: _sortOrder,
+        page: _currentPage,
+      );
+
+      ListingResponse response;
       
       if (_selectedSubCategory != null) {
-        listings = await _listingService.getListingsBySubCategory(_selectedSubCategory!);
+        response = await _listingService.getFilteredListings(
+          subCategory: _selectedSubCategory!,
+          filters: filtersWithSort,
+        );
       } else if (_selectedCategory != null) {
-        listings = await _listingService.getListingsByCategory(_selectedCategory!);
+        response = await _listingService.getFilteredListingsByCategory(
+          category: _selectedCategory!,
+          filters: filtersWithSort,
+        );
       } else {
-        listings = await _listingService.getAllListings();
+        response = await _listingService.getFilteredListingsByCategory(
+          category: 'all',
+          filters: filtersWithSort,
+        );
       }
 
       setState(() {
-        _apiListings = listings;
+        _apiListings = response.listings;
+        _totalCount = response.totalCount;
+        _currentPage = response.currentPage;
+        _totalPages = response.totalPages;
         _isLoading = false;
-        _useApi = listings.isNotEmpty;
+        _useApi = true;
       });
     } catch (e) {
       debugPrint('API Hatası: $e');
@@ -71,13 +102,74 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _selectedCategory = category;
       _selectedSubCategory = subCategory;
+      _currentPage = 1; // Kategori değişince ilk sayfaya dön
+      _filters = const FilterParams(); // Filtreleri sıfırla
     });
     _loadListings(); // Kategori değişince yeniden yükle
   }
 
+  void _onFilterTap() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Filtreler',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Align(
+          alignment: Alignment.centerRight,
+          child: FilterScreen(
+            category: _selectedCategory,
+            subCategory: _selectedSubCategory,
+            currentFilters: _filters,
+            onApplyFilters: (newFilters) {
+              setState(() {
+                _filters = newFilters;
+                _currentPage = 1;
+              });
+              _loadListings();
+            },
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOut,
+          )),
+          child: child,
+        );
+      },
+    );
+  }
+
+  void _onPageChanged(int page) {
+    setState(() {
+      _currentPage = page;
+    });
+    _loadListings();
+  }
+
+  void _onSortChanged(String sortBy, String sortOrder) {
+    setState(() {
+      _sortBy = sortBy;
+      _sortOrder = sortOrder;
+      _currentPage = 1;
+    });
+    _loadListings();
+  }
+
+  int get _activeFilterCount {
+    return _filters.activeCount(_selectedSubCategory);
+  }
+
   List<Listing> _getListings() {
     // API verisi varsa onu kullan, yoksa mock data
-    if (_useApi && _apiListings.isNotEmpty) {
+    if (_useApi) {
       return _apiListings;
     }
     
@@ -97,6 +189,8 @@ class _HomeScreenState extends State<HomeScreen> {
           // Sol: Sidebar
           AppSidebar(
             onCategorySelected: _onCategorySelected,
+            onFilterTap: _onFilterTap,
+            activeFilterCount: _activeFilterCount,
           ),
 
           // Sağ: İlan Listesi + Footer
@@ -125,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // İçerik Alanı (Scroll edilebilir - Footer dahil)
         Expanded(
-          child: listings.isEmpty
+          child: (listings.isEmpty && _selectedCategory == null && _selectedSubCategory == null)
               ? _buildEmptyState()
               : _buildScrollableContent(listings),
         ),
@@ -194,29 +288,45 @@ class _HomeScreenState extends State<HomeScreen> {
       color: AppColors.primary,
       child: CustomScrollView(
         slivers: [
-          // İlan Listesi
-          SliverPadding(
-            padding: const EdgeInsets.all(24),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  if (index >= listings.length) return null;
-                  final listing = listings[index];
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: index < listings.length - 1 ? 16 : 0),
-                    child: ListingCard(
-                      listing: listing,
-                      onTap: () {
-                        context.go('/ilan-detay/${listing.id}', extra: listing);
-                      },
-                      onFavoriteTap: () {
-                        debugPrint('Favori tıklandı: ${listing.title}');
-                      },
-                    ),
-                  );
-                },
-                childCount: listings.length,
+          // İlan Listesi veya Boş Durum
+          if (listings.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _buildNoResultsState(),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.all(24),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index >= listings.length) return null;
+                    final listing = listings[index];
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: index < listings.length - 1 ? 16 : 0),
+                      child: ListingCard(
+                        listing: listing,
+                        onTap: () {
+                          context.go('/ilan-detay/${listing.id}', extra: listing);
+                        },
+                        onFavoriteTap: () {
+                          debugPrint('Favori tıklandı: ${listing.title}');
+                        },
+                      ),
+                    );
+                  },
+                  childCount: listings.length,
+                ),
               ),
+            ),
+
+          // Pagination
+          SliverToBoxAdapter(
+            child: PaginationWidget(
+              currentPage: _currentPage,
+              totalPages: _totalPages,
+              totalCount: _totalCount,
+              onPageChanged: _onPageChanged,
             ),
           ),
 
@@ -224,6 +334,58 @@ class _HomeScreenState extends State<HomeScreen> {
           const SliverToBoxAdapter(
             child: AppFooter(),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoResultsState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off,
+            size: 64,
+            color: AppColors.textTertiary,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'İlan Bulunamadı',
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _activeFilterCount > 0
+                ? 'Seçtiğiniz filtrelere uygun ilan bulunamadı.\nFiltreleri değiştirmeyi deneyin.'
+                : 'Bu kategoride henüz ilan bulunmuyor.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppColors.textTertiary,
+            ),
+          ),
+          if (_activeFilterCount > 0) ...[
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _filters = const FilterParams();
+                  _currentPage = 1;
+                });
+                _loadListings();
+              },
+              icon: const Icon(Icons.clear_all),
+              label: const Text('Filtreleri Temizle'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -300,39 +462,87 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSortDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Text(
-            'Sırala: ',
-            style: GoogleFonts.inter(
-              fontSize: 13,
+    String sortLabel = _getSortLabel();
+    
+    return PopupMenuButton<String>(
+      offset: const Offset(0, 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      color: AppColors.surface,
+      onSelected: (value) {
+        final parts = value.split('_');
+        _onSortChanged(parts[0], parts[1]);
+      },
+      itemBuilder: (context) => [
+        _buildSortMenuItem('fiyat_asc', 'Fiyat (Artan)', _sortBy == 'fiyat' && _sortOrder == 'asc'),
+        _buildSortMenuItem('fiyat_desc', 'Fiyat (Azalan)', _sortBy == 'fiyat' && _sortOrder == 'desc'),
+        _buildSortMenuItem('tarih_desc', 'Tarih (En Yeni)', _sortBy == 'tarih' && _sortOrder == 'desc'),
+        _buildSortMenuItem('tarih_asc', 'Tarih (En Eski)', _sortBy == 'tarih' && _sortOrder == 'asc'),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Text(
+              'Sırala: ',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            Text(
+              sortLabel,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.keyboard_arrow_down,
+              size: 18,
               color: AppColors.textSecondary,
             ),
-          ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildSortMenuItem(String value, String label, bool isSelected) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: [
+          if (isSelected)
+            const Icon(Icons.check, size: 18, color: AppColors.primary)
+          else
+            const SizedBox(width: 18),
+          const SizedBox(width: 8),
           Text(
-            'Tarih (Yeni)',
+            label,
             style: GoogleFonts.inter(
               fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? AppColors.primary : AppColors.textPrimary,
             ),
-          ),
-          const SizedBox(width: 8),
-          const Icon(
-            Icons.keyboard_arrow_down,
-            size: 18,
-            color: AppColors.textSecondary,
           ),
         ],
       ),
     );
+  }
+
+  String _getSortLabel() {
+    if (_sortBy == 'fiyat') {
+      return _sortOrder == 'asc' ? 'Fiyat (Artan)' : 'Fiyat (Azalan)';
+    } else {
+      return _sortOrder == 'desc' ? 'Tarih (Yeni)' : 'Tarih (Eski)';
+    }
   }
 
   Widget _buildEmptyState() {
