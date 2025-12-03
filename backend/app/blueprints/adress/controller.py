@@ -44,6 +44,8 @@ def update_address_controller(data):
 
 
 def get_address_controller(data):
+
+    
     statement = text(f"""SELECT * FROM adres WHERE adres_id = :adres_id""")
     response  = get_service(data,statement)
 

@@ -5,7 +5,7 @@ engine = sqlalchemy.create_engine(
     DATABASE_URL,
 )
 
-def dynamic_insert_parser(data):
+def dynamic_insert_parser(data):  
     
     resultstr = "("
     for item in(data.keys()):
