@@ -367,6 +367,48 @@ class ListingService {
     return response.success;
   }
 
+  /// Arsa ilanı oluştur
+  Future<bool> createArsa(Map<String, dynamic> payload) async {
+    final response = await _api.post(ApiConfig.arsaAdd, payload);
+    return response.success;
+  }
+
+  /// Turistik Tesis ilanı oluştur
+  Future<bool> createTuristik(Map<String, dynamic> payload) async {
+    final response = await _api.post(ApiConfig.turistikAdd, payload);
+    return response.success;
+  }
+
+  /// Devre Mülk ilanı oluştur
+  Future<bool> createDevreMulk(Map<String, dynamic> payload) async {
+    final response = await _api.post(ApiConfig.devreAdd, payload);
+    return response.success;
+  }
+
+  /// Otomobil ilanı oluştur
+  Future<bool> createOtomobil(Map<String, dynamic> payload) async {
+    final response = await _api.post(ApiConfig.otomobilAdd, payload);
+    return response.success;
+  }
+
+  /// Motosiklet ilanı oluştur
+  Future<bool> createMotosiklet(Map<String, dynamic> payload) async {
+    final response = await _api.post(ApiConfig.motosikletAdd, payload);
+    return response.success;
+  }
+
+  /// Karavan ilanı oluştur
+  Future<bool> createKaravan(Map<String, dynamic> payload) async {
+    final response = await _api.post(ApiConfig.karavanAdd, payload);
+    return response.success;
+  }
+
+  /// Tır ilanı oluştur
+  Future<bool> createTir(Map<String, dynamic> payload) async {
+    final response = await _api.post(ApiConfig.tirAdd, payload);
+    return response.success;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // ARSA
   // ═══════════════════════════════════════════════════════════════════════════
