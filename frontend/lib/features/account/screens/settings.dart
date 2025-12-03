@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '/core/services/auth_service.dart';
+import '/core/services/address_service.dart';
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key, this.initialPhone, this.initialEmail});
 
@@ -189,11 +190,42 @@ class _SettingsPageState extends State<SettingsPage> {
       return;
     }
 
+    // 1. Önce kullanıcının adres_id'sini NULL yap (foreign key constraint için)
+    if (user.adresId != null) {
+      debugPrint('🔥 HESAP SİLME: Kullanıcı bilgileri:');
+      debugPrint('   - kullanici_id: ${user.kullaniciId}');
+      debugPrint('   - adres_id: ${user.adresId}');
+      debugPrint('   - email: ${user.email}');
+      
+      debugPrint('🔗 Önce kullanıcının adres_id\'si NULL yapılıyor...');
+      final adresIdRemoved = await _authService.updateUserFields({'adres_id': null});
+      
+      if (adresIdRemoved) {
+        debugPrint('✅ Kullanıcının adres_id\'si NULL yapıldı');
+        
+        // 2. Şimdi adresi sil
+        debugPrint('🏠 Adres siliniyor: ${user.adresId}');
+        final addressDeleted = await AddressService().deleteAddress(user.adresId!);
+        
+        if (addressDeleted) {
+          debugPrint('✅ Adres başarıyla silindi - adres_id: ${user.adresId}');
+        } else {
+          debugPrint('⚠️ Adres silinemedi - adres_id: ${user.adresId}');
+        }
+      } else {
+        debugPrint('⚠️ Kullanıcının adres_id\'si NULL yapılamadı');
+      }
+    } else {
+      debugPrint('ℹ️ Kullanıcının adres_id\'si null, adres silme atlanıyor');
+    }
+
+    // 3. Son olarak hesabı sil
+    debugPrint('👤 Hesap siliniyor...');
     final ok = await _authService.deleteCurrentUser();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(ok ? 'Hesabınız silindi.' : 'Hesap silinemedi.'),
+        content: Text(ok ? 'Hesabınız ve adres bilgileriniz silindi.' : 'Hesap silinemedi.'),
         backgroundColor: ok ? Colors.red : Colors.orange,
       ),
     );

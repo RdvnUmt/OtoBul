@@ -96,10 +96,17 @@ class AddressService {
   /// Adresi sil
   Future<bool> deleteAddress(int adresId) async {
     try {
+      debugPrint('🏠 DeleteAddress çağrıldı - adres_id: $adresId');
+      
       final uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.adresDelete}');
+      final body = jsonEncode({'adres_id': adresId});
+      
+      debugPrint('🏠 DeleteAddress URI: $uri');
+      debugPrint('🏠 DeleteAddress Body: $body');
+      
       final request = http.Request('DELETE', uri);
       request.headers.addAll(_headers);
-      request.body = jsonEncode({'adres_id': adresId});
+      request.body = body;
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -107,7 +114,11 @@ class AddressService {
       debugPrint('🏠 DeleteAddress Response: ${response.statusCode} - ${response.body}');
 
       if (response.statusCode == 200) {
+        debugPrint('✅ DeleteAddress başarılı!');
         return true;
+      } else {
+        debugPrint('⚠️ DeleteAddress başarısız - status: ${response.statusCode}');
+        return false;
       }
     } catch (e) {
       debugPrint('❌ DeleteAddress Hatası: $e');

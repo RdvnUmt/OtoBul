@@ -26,18 +26,26 @@ def add_service(data,statement):
 
 
 def delete_service(data,statement):
+    print(f"🔥 delete_service - data: {data}")
+    print(f"🔥 delete_service - statement: {statement}")
+    
     with engine.connect() as con:
 
         try: 
-            con.execute(statement, data)
+            result = con.execute(statement, data)
+            print(f"🔥 delete_service - SQL başarılı, affected rows: {result.rowcount}")
             con.commit()
         except sqlalchemy.exc.DataError as e:
+            print(f"❌ DataError: {e}")
             return f"Verilerinizi lütfen kontrol edin!",400
         except sqlalchemy.exc.IntegrityError  as e:
+            print(f"❌ IntegrityError: {e}")
             return  "Data integration hatası!",400
         except sqlalchemy.exc.InvalidRequestError as e:
+            print(f"❌ InvalidRequestError: {e}")
             return "Gönderilen verilede eksiklik var lütfen ekleyiniz!",400
         except Exception as e :
+            print(f"❌ Exception: {type(e).__name__} - {e}")
             return f"{e}",520
         
     return "Adres başarıyla silindi",200   
